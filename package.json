@@ -1,0 +1,11 @@
+{
+  "name": "cypress-query-separation",
+  "version": "1.0.0",
+  "description": "Add-on library for Cypress to allow true query (no failing-test side effect)",
+  "main": "index.js",
+  "author": "Fody <130543954+FodyF@users.noreply.github.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "^13.1.0"
+  }
+}
