@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "lib": ["es2015", "dom"],
+    "types": [
+      "cypress", 
+      "./src/overrides/index.d.ts", 
+      "./cypress/support/commands.d.ts"
+    ]
+  }
+}
