@@ -16,10 +16,10 @@ describe('cy.get', () => {
 
   beforeEach(() => {
     cy.mount(`<div id="present-on-load">Present on page load</div>`)
-      .appendAfter(`<div id="added-after-delay">Appended after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
+      .appendAfter(`<div id="added-after-delay" style="color:red">Appended after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
   })
 
-  context('{softFail:true} option', () => {
+  context('{nofail:true} option', () => {
 
     it('{nofail:true} causes a failing query to return null', () => {
       cy.get('#added-after-delay', {nofail:true, timeout:beforeLoad})
