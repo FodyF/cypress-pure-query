@@ -2,7 +2,7 @@
 
 ### Cypress pure queries that will not fail the test when the query fails.
 
-Cypress 12 gave query commands a new API, but as before they still fail the test when the query fails. 
+Cypress 12 gave query commands a new API, but they still fail the test when the query fails. 
 
 This library allows queries to be side-effect free, as per the [CommandQuerySeparation](https://martinfowler.com/bliki/CommandQuerySeparation.html) principle:
 
