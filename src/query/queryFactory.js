@@ -30,7 +30,7 @@ export function queryFactory(testCtx, outerFn, ...args) {
   }
 
   //  bump up timeout to turn it off in Cypress
-  const optionsAdjusted = {...options, timeout: options.timeout + 500, log:false}
+  const optionsAdjusted = {...options, timeout: options.timeout + 500}
   const innerFn = outerFn.apply(testCtx, [...queryParams, optionsAdjusted])
   const expires = Date.now() + options.timeout
 
