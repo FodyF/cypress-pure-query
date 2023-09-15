@@ -7,7 +7,6 @@ describe('cy.contains', () => {
 
   const asyncLoadDelay = 150
   const afterLoad = asyncLoadDelay+100
-  // const beforeLoad = asyncLoadDelay-50
   const expectedText = `Added after ${asyncLoadDelay} ms`
 
   function isNull(x) {
@@ -15,10 +14,6 @@ describe('cy.contains', () => {
   }
 
   beforeEach(() => {
-    // cy.visit('cypress/html/divs-eventually.html', {
-    //   // @ts-ignore
-    //   onBeforeLoad: (win) => win.delay = asyncLoadDelay
-    // })
     cy.mount(`<div id="present-on-load">Present on page load</div>`)
       .appendAfter(`<div id="added-after-delay" style="color:orange">Added after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
       .appendChild(`<span id="added-after-2x-delay" style="color:red">Added after 2x ${asyncLoadDelay} ms</span>`, asyncLoadDelay *2)
