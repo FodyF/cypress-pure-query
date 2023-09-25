@@ -1,11 +1,16 @@
 {
-  "name": "cypress-query-separation",
+  "name": "cypress-pure-query",
   "version": "1.0.0",
-  "description": "Add-on library for Cypress to allow true query (no failing-test side effect)",
+  "description": "Cypress queries that will not fail the test when the query fails",
   "main": "index.js",
   "author": "Fody <130543954+FodyF@users.noreply.github.com>",
   "license": "MIT",
   "devDependencies": {
-    "cypress": "^13.1.0"
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.22.20",
+    "@cypress/webpack-preprocessor": "^6.0.0",
+    "babel-loader": "^9.1.3",
+    "cypress": "^13.1.0",
+    "webpack": "^5.88.2"
   }
 }
