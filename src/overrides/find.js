@@ -1,4 +1,4 @@
-import {queryFactory} from '../query/queryFactory'
+import {queryFactory} from '../query'
 
 Cypress.Commands.overwriteQuery('find', function (originalFn, ...args) {
   let [selector, options = {}] = args  // ensure options

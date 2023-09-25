@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 // @ts-check
 
-console.clear()
+// console.clear()
 
 describe('cy.get', () => {
 

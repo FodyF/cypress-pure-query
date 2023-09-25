@@ -25,4 +25,5 @@ module.exports = defineConfig({
       return config
     },
   },
+  reporter: 'mochawesome',
 });

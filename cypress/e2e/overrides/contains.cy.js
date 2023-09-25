@@ -47,7 +47,6 @@ describe('cy.contains', () => {
 
     it('{nofail:false} allows test to fail (syntax 1)', (done) => {
       cy.on('fail', (error) => {
-        console.log(error.message)
         const msg = "Expected to find content: 'Not the text'"
         assert(error.message.includes(msg), 'Correct error thrown')
         done()

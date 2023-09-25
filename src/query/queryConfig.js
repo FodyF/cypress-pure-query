@@ -1,3 +1,4 @@
+// @ts-check
 
 Cypress.queryConfig = {
   queryId: 0,

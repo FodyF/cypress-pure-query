@@ -1,4 +1,4 @@
-import { queryFactory } from '../query/queryFactory'
+import { queryFactory } from '../query'
 
 const traversals = [
   'eq', 
