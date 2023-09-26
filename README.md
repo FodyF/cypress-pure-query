@@ -41,7 +41,7 @@ the Cypress log is enhanced with artifacts
 
 Here is a log sample from the test:
 
-![Cypress split on GitHub Actions](./assets/logging.png)
+![Logginf example](./assets/logging.png)
 
 
 Author: Fody &lt;FodyF@gmail.com&gt; &copy; 2023
