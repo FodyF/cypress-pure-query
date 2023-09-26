@@ -52,7 +52,7 @@ describe('mods to cypress logging', () => {
       })
     })
 
-    context('FORMAT: cy.contains(selector, content)', () => {
+    context('FORMAT: cy.contains(content, options)', () => {
 
       it('passing query, nofail: false', () => {
          cy.contains('#added-after-delay', 'Added')
