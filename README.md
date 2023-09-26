@@ -41,7 +41,7 @@ the Cypress log is enhanced with artifacts
 
 Here is a log sample from the test:
 
-![Logging example](./images/logging.png)
+![Logging example](./images/Logging.png)
 
 
 Author: Fody &lt;FodyF@gmail.com&gt; &copy; 2023
