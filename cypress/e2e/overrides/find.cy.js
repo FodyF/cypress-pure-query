@@ -11,10 +11,6 @@ describe('cy.find()', () => {
   const beforeLoad = asyncLoadDelay-50
   const expectedText = `Appended after 2x ${asyncLoadDelay} ms`
 
-  function isNull(x) {
-    expect(x).to.eq(null)
-  }
-
   beforeEach(() => {
     cy.mount(`<div id="present-on-load">Present on page load</div>`)
       .appendAfter(`<div id="added-after-delay" style="color:orange">Appended after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
@@ -26,13 +22,13 @@ describe('cy.find()', () => {
     it('{nofail:true} causes a failing query to return null', () => {
       cy.get('#added-after-delay', {timeout:afterLoad})                
         .find('span', {nofail:true, timeout:beforeLoad})   
-        .then(isNull)                             
+        .isNull()                            
     })
 
     it('a fail in a prior query propagates the null subject forward', () => {
       cy.get('#does-not-exist', {nofail:true, timeout:50})    
         .find('span', {nofail:true})   
-        .then(isNull)                          
+        .isNull()                          
     })
     
     it('{nofail:true} does not change a passing query', () => {
@@ -68,7 +64,7 @@ describe('cy.find()', () => {
       Cypress.env("nofail", true)
       cy.get('#added-after-delay', {timeout:afterLoad})
         .find('span', {timeout:beforeLoad})  
-        .then(isNull) 
+        .isNull() 
     })
 
     it('a fail in a prior query propagates the null subject forward', () => {

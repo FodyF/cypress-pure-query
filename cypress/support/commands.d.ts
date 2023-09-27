@@ -6,5 +6,6 @@ declare namespace Cypress {
     appendChild(html: string): any
     appendAfter(html: string): any
     openWindow(url: string, features?: string): any
+    isNull(subject: any): any
   }
 }

@@ -10,10 +10,6 @@ describe('cy.get', () => {
   const beforeLoad = asyncLoadDelay-50
   const expectedText = `Appended after ${asyncLoadDelay} ms`
 
-  function isNull(x) {
-    expect(x).to.eq(null)
-  }
-
   beforeEach(() => {
     cy.mount(`<div id="present-on-load">Present on page load</div>`)
       .appendAfter(`<div id="added-after-delay" style="color:red">Appended after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
@@ -22,10 +18,8 @@ describe('cy.get', () => {
   context('{nofail:true} option', () => {
 
     it('{nofail:true} causes a failing query to return null', () => {
-      cy.get('#added-after-delay', {nofail:true, timeout:beforeLoad})
-        .then(isNull)
-      cy.get('#does-not-exist', {nofail:true, timeout:50})
-        .then(isNull)
+      cy.get('#added-after-delay', {nofail:true, timeout:beforeLoad}).isNull()
+      cy.get('#does-not-exist', {nofail:true, timeout:50}).isNull()
     })
 
     it('{nofail:true} does not change a passing query', () => {
@@ -43,8 +37,8 @@ describe('cy.get', () => {
 
     it('Cypress.env("nofail", true) causes a failing query to return null', () => {
       Cypress.env("nofail", true)
-      cy.get('#added-after-delay', {timeout:beforeLoad}).then(isNull)
-      cy.get('#does-not-exist', {timeout:50}).then(isNull)
+      cy.get('#added-after-delay', {timeout:beforeLoad}).isNull()
+      cy.get('#does-not-exist', {timeout:50}).isNull()
     })
 
     it('Cypress.env("nofail", true) does not change a passing query', () => {

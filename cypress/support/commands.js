@@ -29,3 +29,5 @@ const after = (subject, html, delay = 100) => {
   return cy.noop(testEl).as('testElements')
 }
 Cypress.Commands.add('appendAfter', {prevSubject:true}, after)
+
+Cypress.Commands.add('isNull', {prevSubject:true}, (x) => expect(x).to.eq(null))

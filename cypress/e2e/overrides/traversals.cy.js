@@ -7,119 +7,110 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
   const asyncLoadDelay = 100
 
-  function isNull(x) {
-    expect(x).to.eq(null)
-  }
-
   it('first', () => {
     cy.get('#does-not-exist', {nofail:true})
       .first({nofail:true})
-      .then(isNull) 
+      .isNull()
   })
 
   it('last', () => {
     cy.get('#does-not-exist', {nofail:true})
       .last({nofail:true})
-      .then(isNull) 
+      .isNull()
   })
 
   it('next', () => {
-    // cy.visit('cypress/html/first-middle-last.html')
     cy.mount(`<div id="first">first element</div>`)
     .appendAfter(`<div id="middle" style="color:orange">middle element<div id="child">child element</div></div>`, asyncLoadDelay)
     .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
 
     cy.get('#last')
       .next({nofail:true})
-      .then(isNull)
+      .isNull()
 
     cy.get('#first')
       .next('span', {nofail:true})
-      .then(isNull)     
+      .isNull()    
 
     cy.get('#first')
       .next('#does-not-exist', {nofail:true})
-      .then(isNull)    
+      .isNull()   
   })
 
   it('nextAll', () => {
-    // cy.visit('cypress/html/first-middle-last.html')
     cy.mount(`<div id="first">first element</div>`)
       .appendAfter(`<div id="middle" style="color:orange">middle element<div id="child">child element</div></div>`, asyncLoadDelay)
       .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
 
     cy.get('#last')
       .nextAll({nofail:true})
-      .then(isNull)  
+      .isNull()  
 
     cy.get('#first')
       .nextAll('span', {nofail:true})
-      .then(isNull)     
+      .isNull()     
 
     cy.get('#first')
       .nextAll('#does-not-exist', {nofail:true})
-      .then(isNull)  
+      .isNull() 
   })
 
   it('nextUntil', () => {
-    // cy.visit('cypress/html/first-middle-last.html')
     cy.mount(`<div id="first">first element</div>`)
       .appendAfter(`<div id="middle" style="color:orange">middle element<div id="child">child element</div></div>`, asyncLoadDelay)
       .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
 
     cy.get('#last')
       .nextUntil('span', undefined, {nofail:true}) // 2nd param required for @ts-check 
-      .then(isNull)        
+      .isNull()        
 
     cy.get('#first')
       .nextUntil('#last', 'span', {nofail:true})  
-      .then(isNull)  
+      .isNull() 
 
     cy.get('#last')
       .nextUntil('#does-not-exist', undefined, {nofail:true})  // 2nd param required for @ts-check
-      .then(isNull) 
+      .isNull() 
 
     cy.get('#first')
       .nextUntil('#last', '#does-not-exist', {nofail:true})
-      .then(isNull)  
+      .isNull() 
   })
 
   it('prev', () => {
-    // cy.visit('cypress/html/first-middle-last.html')
     cy.mount(`<div id="first">first element</div>`)
       .appendAfter(`<div id="middle" style="color:orange">middle element<div id="child">child element</div></div>`, asyncLoadDelay)
       .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
 
     cy.get('#first')
       .prev({nofail:true})
-      .then(isNull)      
+      .isNull()     
 
     cy.get('#last')
       .prev('span', {nofail:true})
-      .then(isNull)      
+      .isNull()      
 
     cy.get('#last')
       .prev('#does-not-exist', {nofail:true})
-      .then(isNull)   
+      .isNull()  
   })
 
   it('prevAll', () => {
-    // cy.visit('cypress/html/first-middle-last.html')
     cy.mount(`<div id="first">first element</div>`)
       .appendAfter(`<div id="middle" style="color:orange">middle element<div id="child">child element</div></div>`, asyncLoadDelay)
       .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
 
     cy.get('#first')
       .prevAll({nofail:true})
-      .then(isNull)      
+      .isNull()      
 
     cy.get('#last')
       .prevAll('span', {nofail:true})
-      .then(isNull)       
+      .isNull()      
 
     cy.get('#last')
       .prevAll('#does-not-exist', {nofail:true})
-      .then(isNull)   
+      .isNull()  
   })
 
   it('prevUntil', () => {
@@ -129,19 +120,19 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.get('#first')
       .prevUntil('span', undefined, {nofail:true})  // fails as nothing prev to #first
-      .then(isNull)           
+      .isNull()          
 
     cy.get('#last')         
       .prevUntil('#first', 'span', {nofail:true})   
-      .then(isNull)       
+      .isNull()      
 
     cy.get('#first')
       .prevUntil('#does-not-exist', undefined, {nofail:true})
-      .then(isNull)  
+      .isNull()  
 
     cy.get('#last')
       .prevUntil('#first', '#does-not-exist', {nofail:true})
-      .then(isNull)      
+      .isNull()      
   })
 
   it('parent', () => {
@@ -152,15 +143,15 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.document()
       .parent({nofail:true})
-      .then(isNull)    
+      .isNull()   
 
     cy.get('#child')
       .parent('span', {nofail:true})
-      .then(isNull)         
+      .isNull()         
 
     cy.get('#child')
       .parent('#does-not-exist', {nofail:true})
-      .then(isNull)    
+      .isNull()   
   })
 
   it('parents', () => {
@@ -171,15 +162,15 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.document()
       .parents({nofail:true})
-      .then(isNull)    
+      .isNull()    
 
     cy.get('#child')
       .parents('span', {nofail:true})
-      .then(isNull)   
+      .isNull()   
 
     cy.get('#child')
       .parents('#does-not-exist', {nofail:true})
-      .then(isNull)     
+      .isNull()     
   })
 
   it('parentsUntil', () => {
@@ -190,11 +181,11 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.get('#child')
       .parentsUntil('div', undefined, {nofail:true})
-      .then(isNull)  
+      .isNull()  
 
     cy.get('#child')
       .parentsUntil('#grandparent', 'span', {nofail:true})
-      .then(isNull)  
+      .isNull()  
   })
 
   it('siblings', () => {
@@ -204,15 +195,15 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.get('#child')
       .siblings({nofail:true})
-      .then(isNull)    
+      .isNull()    
 
     cy.get('#first')
       .siblings('span', {nofail:true})
-      .then(isNull)  
+      .isNull()
 
     cy.get('#first')
       .siblings('#does-not-exist', {nofail:true})
-      .then(isNull)       
+      .isNull()       
   })
 
   it('children', () => {
@@ -223,15 +214,15 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.get('#child')
       .children({nofail:true})
-      .then(isNull)     
+      .isNull()     
 
     cy.get('#parent')
       .children('span', {nofail:true})
-      .then(isNull)  
+      .isNull() 
 
     cy.get('#parent')
       .children('#does-not-exist', {nofail:true})
-      .then(isNull)      
+      .isNull()      
   })
 
   it('filter', () => {
@@ -241,15 +232,15 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.get('div')
       .filter('span', {nofail:true})
-      .then(isNull)    
+      .isNull()    
 
     cy.get('div')
       .filter('#does-not-exist', {nofail:true})
-      .then(isNull)  
+      .isNull()  
 
     cy.get('div')
       .filter(() => false, {nofail:true})
-      .then(isNull)       
+      .isNull()       
   })
 
   it('not', () => {
@@ -259,7 +250,7 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.get('div')
       .not('div', {nofail:true})
-      .then(isNull)    
+      .isNull()    
   })
 
   it('closest', () => {
@@ -270,10 +261,10 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
     cy.get('#child')
       .closest('span', {nofail:true})
-      .then(isNull)   
+      .isNull()   
 
     cy.get('#child')
       .closest('#does-not-exist', {nofail:true})
-      .then(isNull)      
+      .isNull()      
   })
 })

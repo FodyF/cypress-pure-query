@@ -9,10 +9,6 @@ describe('cy.contains', () => {
   const afterLoad = asyncLoadDelay+100
   const expectedText = `Added after ${asyncLoadDelay} ms`
 
-  function isNull(x) {
-    expect(x).to.eq(null)
-  }
-
   beforeEach(() => {
     cy.mount(`<div id="present-on-load">Present on page load</div>`)
       .appendAfter(`<div id="added-after-delay" style="color:orange">Added after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
@@ -22,17 +18,14 @@ describe('cy.contains', () => {
   context('{nofail:true} query option', () => {
 
     it('{nofail:true} causes a failing query to return null', () => {
-      cy.contains('#added-after-delay', 'not this text', {nofail:true, timeout:afterLoad})
-        .then(isNull)
-
-      cy.get('#added-after-delay').contains('not this text', {nofail:true, timeout:afterLoad})
-        .then(isNull)
+      cy.contains('#added-after-delay', 'not this text', {nofail:true, timeout:afterLoad}).isNull()
+      cy.get('#added-after-delay').contains('not this text', {nofail:true, timeout:afterLoad}).isNull()
     })
 
     it('a fail in a prior query propagates the null subject forward', () => {
       cy.get('#does-not-exist', {nofail:true, timeout:50})
         .contains('this will be skipped', {nofail:true})
-        .then(isNull)
+        .isNull()
     })  
 
     it('{nofail:true} does not change a passing query', () => {
@@ -69,12 +62,10 @@ describe('cy.contains', () => {
 
     it('Cypress.env("nofail", true) causes a failing query to return null', () => {
       Cypress.env("nofail", true)
-      cy.contains('#added-after-delay', 'not this text', {timeout:afterLoad})
-        .then(isNull)
-
+      cy.contains('#added-after-delay', 'not this text', {timeout:afterLoad}).isNull()
       cy.get('#added-after-delay', {timeout:afterLoad})
         .contains('not-this-text', {timeout:afterLoad})
-        .then(isNull)
+        .isNull()
     })
     
     it('Cypress.env("nofail", true) applies to the whole chain', () => {
@@ -87,7 +78,7 @@ describe('cy.contains', () => {
       Cypress.env("nofail", true)
       cy.get('#not-present', {timeout:50})     // this yields null
         .contains('this will be skipped')      // this does not evaluate, 
-        .then(isNull)                         // but passes on the null subject
+        .isNull()                             // but passes on the null subject
     })
 
     it('Cypress.env("nofail", true) does not change a passing query', () => {
