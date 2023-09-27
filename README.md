@@ -39,9 +39,13 @@ the Cypress log is enhanced with artifacts
 - the status tag `(failed)` is added to the description
 - queries with a preceding fail are tagged with `(skipped)`
 
-Here is a log sample from the test:
+Here is a comparison
 
-![Logging example](./images/logging.png)
+| normal logging                                   |  enhanced logging                        |
+|:------------------------------------------------:|:----------------------------------------:|
+| ![Logging example](./images/logging-normal.png)  | ![Logging example](./images/logging.png) |
+
+
 
 ------------------------------------------------------
 Author: Fody &lt;FodyF@gmail.com&gt; &copy; 2023
