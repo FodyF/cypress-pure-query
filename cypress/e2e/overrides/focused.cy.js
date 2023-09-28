@@ -8,7 +8,6 @@ describe('cy.focused', {defaultCommandTimeout:50}, () => {
   }
 
   beforeEach(() => {
-    // cy.visit('cypress/html/input.html')
     cy.mount('<input id="input1">')
   })
 
