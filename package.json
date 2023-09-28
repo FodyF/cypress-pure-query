@@ -11,9 +11,16 @@
     "@cypress/webpack-preprocessor": "^6.0.0",
     "babel-loader": "^9.1.3",
     "cypress": "^13.1.0",
+    "cypress-multi-reporters": "^1.6.3",
+    "mochawesome": "^7.1.3",
+    "mochawesome-merge": "^4.3.0",
+    "mochawesome-report-generator": "^6.2.0",
     "webpack": "^5.88.2"
   },
   "dependencies": {
-    "mochawesome": "^7.1.3"
+    
+  },
+  "scripts": {
+    "run": "cypress run --spec cypress/features/logging.cy.js"
   }
 }

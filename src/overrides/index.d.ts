@@ -50,6 +50,8 @@ declare namespace Cypress {
       
     first(options?: Partial<Loggable & Timeoutable & SoftFail>): Chainable<Subject>
     
+    focused(options?: Partial<Loggable & Timeoutable & SoftFail>): Chainable<JQuery>
+    
     get(selector: string, options?: Partial<Loggable & Timeoutable & Withinable & Shadow & NoFail>): Chainable<Subject>
 
     last<E extends Node = HTMLElement>(options?: Partial<Loggable & Timeoutable & SoftFail>): Chainable<JQuery<E>>
