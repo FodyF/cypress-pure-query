@@ -10,7 +10,7 @@ export const mount = (html) => {
 }
 Cypress.Commands.add('mount', mount)
 
-const append = (subject, html, delay = 100) => {
+const append = (subject, html, delay = 0) => {
   const testEl = Cypress.$(html).filter((i,e) => e.nodeType === 1)
   setTimeout(() => {
     subject.append(testEl)
@@ -20,7 +20,7 @@ const append = (subject, html, delay = 100) => {
 }
 Cypress.Commands.add('appendChild', {prevSubject:true}, append)
 
-const after = (subject, html, delay = 100) => {
+const after = (subject, html, delay = 0) => {
   const testEl = Cypress.$(html).filter((i,e) => e.nodeType === 1)
   setTimeout(() => {
     subject.after(testEl)

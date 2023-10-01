@@ -1,3 +1,6 @@
+/// <reference types="cypress" />
+// @ts-check
+
 const {queryConfig, _, $} = Cypress
 queryConfig.handleLoggingInQuery = true
 
@@ -14,6 +17,19 @@ const yieldForConsole = ($el) => {
     '--nothing--'
 }
 
+/**
+ * @param {{ 
+ *   queryParams: String[]?; 
+ *   options: Object?; 
+ *   log: Cypress.QueryLog; 
+ *   subject: Cypress.Chainable<any>?; 
+ *   $el: JQuery<any>?; 
+ *   found: Boolean; 
+ *   passed: Boolean; 
+ *   baseMessage: string; 
+ *   caughtError: { error?: Error}; 
+ * }} progress
+ */
 function cypressLog(progress) {
   if (!queryConfig.handleLoggingInQuery) return
 
@@ -25,7 +41,6 @@ function cypressLog(progress) {
 
     log?.set({
       displayName: `~${log.get('displayName').replace(/~/g,'')}`,
-      // type: 'child', 
       type: 'query',
       $el,
       visible: true, 
@@ -48,14 +63,21 @@ function cypressLog(progress) {
 }
 export function activateLogging() {
   cy.then(() => Cypress.on('query:log', cypressLog))
-  // Cypress.on('query:log', cypressLog)
-  // Cypress.on('log:added', (attrs, log) => console.log('log:added', attrs, log))
-  // Cypress.on('log:changed', (attrs, log) => console.log('log:changed', attrs, log))
 }
 export function deactivateLogging() {
-  cy.then(() => Cypress.off('query:log', cypressLog))
+  cy.then(() => Cypress.removeAllListeners('query:log'))
 }
 
+/**
+ * Used in queryFactory to emit data to the cypressLog handler
+ * @param {Cypress.Log} log 
+ * @param {String[]?} queryParams 
+ * @param {Object?} options 
+ * @param {Cypress.Chainable<any>?} subject 
+ * @param {JQuery<any>?} $el 
+ * @param {Boolean} found 
+ * @param {Error} caughtError 
+ */
 export function emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError) {
   Cypress.emit('query:log', {
     queryParams,

@@ -42,20 +42,6 @@ export function queryFactory(testCtx, outerFn, ...args) {
 
   const expires = Date.now() + options.timeout
 
-  // const emitToCypressLog = (log, subject, $el, found) => {
-  //   Cypress.emit('query:log', {
-  //     queryParams,
-  //     options, 
-  //     log, 
-  //     subject, 
-  //     $el, 
-  //     found,
-  //     passed: found, 
-  //     baseMessage: queryParams.filter(Boolean).join(', '),
-  //     caughtError
-  //   })
-  // }
-
   const queryFn = function(subject) {
     const $el = subject === null ? null : innerFn(subject)    // skip innerFn if previous result was null
     const found = !!$el?.length
