@@ -3,7 +3,7 @@
 
 console.clear()
 
-describe('traversals', {defaultCommandTimeout:300}, () => {
+describe('traversals', {defaultCommandTimeout:250}, () => {
 
   const asyncLoadDelay = 100
 
@@ -21,8 +21,8 @@ describe('traversals', {defaultCommandTimeout:300}, () => {
 
   it('next', () => {
     cy.mount(`<div id="first">first element</div>`)
-    .appendAfter(`<div id="middle" style="color:orange">middle element<div id="child">child element</div></div>`, asyncLoadDelay)
-    .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
+      .appendAfter(`<div id="middle" style="color:orange">middle element<div id="child">child element</div></div>`, asyncLoadDelay)
+      .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
 
     cy.get('#last')
       .next({nofail:true})

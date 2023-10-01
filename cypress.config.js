@@ -6,6 +6,7 @@ const browserLaunch = require("./cypress.config-browser.launch.js")
 module.exports = defineConfig({
   e2e: {
     setupNodeEvents(on, config) {
+
       on("before:browser:launch", browserLaunch)
 
       // @src & @cypress aliases
@@ -24,7 +25,9 @@ module.exports = defineConfig({
       on('file:preprocessor', file => webpackPreprocessor(options)(file))
       return config
     },
+    specPattern: '**/*.cy.js',
   },
+  
   reporter: 'mochawesome',
   reporterOptions: {
     reportDir: 'cypress/results',

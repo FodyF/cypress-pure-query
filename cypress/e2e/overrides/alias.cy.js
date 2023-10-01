@@ -50,7 +50,7 @@ describe('cy.alias', () => {
     it('{nofail:true} causes a failing alias re-query to return null', () => {
       cy.get('#added-after-delay', {nofail:true, timeout:afterLoad})
         .as('alias')
-        .then($el => $el[0].remove())
+        .then($el => $el.remove())
 
       cy.get('@alias').isNull()
     }) 
@@ -59,7 +59,7 @@ describe('cy.alias', () => {
       cy.on('fail', () => done())
       cy.get('#added-after-delay', {nofail:false, timeout:afterLoad})
         .as('alias')
-        .then($el => $el[0].remove())
+        .then($el => $el.remove())
 
       cy.get('@alias', {timeout:afterLoad}).isNull()
     }

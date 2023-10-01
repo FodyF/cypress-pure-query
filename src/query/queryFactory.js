@@ -1,4 +1,5 @@
 import {parseUserOptions, getRunnerOptions} from './queryOptions.js'
+import {emitToCypressLog} from './logging.js'
 const {queryConfig} = Cypress;
 
 function catchOnFailError(testCtx) {
@@ -41,25 +42,25 @@ export function queryFactory(testCtx, outerFn, ...args) {
 
   const expires = Date.now() + options.timeout
 
-  const emitToCypressLog = (log, subject, $el, found) => {
-    Cypress.emit('query:log', {
-      queryParams,
-      options, 
-      log, 
-      subject, 
-      $el, 
-      found,
-      passed: found, 
-      baseMessage: queryParams.filter(Boolean).join(', '),
-      caughtError
-    })
-  }
+  // const emitToCypressLog = (log, subject, $el, found) => {
+  //   Cypress.emit('query:log', {
+  //     queryParams,
+  //     options, 
+  //     log, 
+  //     subject, 
+  //     $el, 
+  //     found,
+  //     passed: found, 
+  //     baseMessage: queryParams.filter(Boolean).join(', '),
+  //     caughtError
+  //   })
+  // }
 
   const queryFn = function(subject) {
     const $el = subject === null ? null : innerFn(subject)    // skip innerFn if previous result was null
     const found = !!$el?.length
     const timedOut = Date.now() > expires    
-    emitToCypressLog(log, subject, $el, found)
+    emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError)
     return (timedOut && !found) || subject === null ? null : $el
   }
 

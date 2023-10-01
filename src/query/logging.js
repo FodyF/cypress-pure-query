@@ -14,7 +14,7 @@ const yieldForConsole = ($el) => {
     '--nothing--'
 }
 
-Cypress.on('query:log', (progress) => {
+function cypressLog(progress) {
   if (!queryConfig.handleLoggingInQuery) return
 
   try {
@@ -25,6 +25,8 @@ Cypress.on('query:log', (progress) => {
 
     log?.set({
       displayName: `~${log.get('displayName').replace(/~/g,'')}`,
+      // type: 'child', 
+      type: 'query',
       $el,
       visible: true, 
       consoleProps: () => {
@@ -43,4 +45,27 @@ Cypress.on('query:log', (progress) => {
   } catch (error) {
     console.error('event:query:log', error.message)
   }
-})
+}
+export function activateLogging() {
+  cy.then(() => Cypress.on('query:log', cypressLog))
+  // Cypress.on('query:log', cypressLog)
+  // Cypress.on('log:added', (attrs, log) => console.log('log:added', attrs, log))
+  // Cypress.on('log:changed', (attrs, log) => console.log('log:changed', attrs, log))
+}
+export function deactivateLogging() {
+  cy.then(() => Cypress.off('query:log', cypressLog))
+}
+
+export function emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError) {
+  Cypress.emit('query:log', {
+    queryParams,
+    options, 
+    log, 
+    subject, 
+    $el, 
+    found,
+    passed: found, 
+    baseMessage: queryParams.filter(Boolean).join(', '),
+    caughtError
+  })
+}

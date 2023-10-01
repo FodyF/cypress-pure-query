@@ -26,6 +26,7 @@ export function expectLogText(displayName, expectedText, index = 0) {
   cy.on('before:log', () => false)
   cy.wrap(logEntryForCurrentTest(), {log:false})
     .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false})
+    // .find(`span.command-info:has(span.command-method span:contains("${displayName}"))`, {log:false})
     .eq(index, {log:false})
     .find('span.command-message-text', {log:false})
     .should($el => {
@@ -53,6 +54,7 @@ export function expectLogColor(displayName, expectedColor, index = 0) {
   cy.on('before:log', () => false)
   cy.wrap(logEntryForCurrentTest(), {log:false})  
     .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false})
+    // .find(`span.command-info:has(span.command-method span:contains("${displayName}"))`, {log:false})
     .eq(index, {log:false})
     .find('span.command-message-text', {log:false})
     .should($logEntry => {
