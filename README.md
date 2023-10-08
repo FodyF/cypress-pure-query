@@ -1,26 +1,20 @@
 # cypress-pure-query
 
-### Cypress queries that will not fail the test when the query fails.
+### Cypress queries that just return a result
 
-Cypress 12 gave query commands a new API, but they still fail the test when the query fails. 
+Cypress 12 gave query commands a new API, but they still fail the test when the query fails. This library allows queries to be side-effect free, as per the [CommandQuerySeparation](https://martinfowler.com/bliki/CommandQuerySeparation.html) principle:
 
-This library allows queries to be side-effect free, as per the [CommandQuerySeparation](https://martinfowler.com/bliki/CommandQuerySeparation.html) principle:
+<dl>
+  <dt>Queries:</dt>
+  <dd>Return a result and do not change the observable state of the system (are free of side effects)</dd>
+  <dt>Commands:</dt>
+  <dd>Change the state of a system but do not return a value</dd>
+</dl>
 
-
-<table style="left-margin: 50px; background-color: lightgray">
-  <tbody style="left-margin: 50px; background-color: lightgray">
-    <tr style="border: none!important; background-color: lightgray">
-      <td style="border: none!important; font-weight: 600!important; vertical-align: text-top; ">Queries:</td>
-      <td style="border: none!important; font-size: 14px!important">Return a result and do not change the observable state of the system (are free of side effects)</td>
-    </tr>
-    <tr style="border: none!important; background-color: lightgray">
-      <td style="border: none!important; font-weight: 600!important; vertical-align: text-top; ">Commands:</td>
-      <td style="border: none!important; font-size: 14px!important">Change the state of a system but do not return a value</td>
-    </tr>
-  </tbody>
-</table>
-
-Use to build Custom Commands for features such as **soft-assertion, conditional test sequences, query retry with actions**
+Use this library to build features such as 
+- **soft-assert**
+- **conditional testing**
+- **retry with actions**
 
 ## Logging
 
@@ -32,7 +26,7 @@ If you add the logging module by importing it in the spec or support
 import '@src/query/log.js'
 ````
 
-the Cypress log is enhanced with artifacts
+the Cypress log is enhanced with these artifacts:
 
 - queries with `{nofail:true}` applied are prefixed by `~` instead of the usual `-`
 - failing queries are colored orange
