@@ -1,9 +1,7 @@
 import {expectLogText, expectLogColor} from '@cypress/support/log-helpers.js'
 import {activateLogging, deactivateLogging} from '@src/query/logging.js'
 
-
 console.clear()
-
 
 const asyncLoadDelay = 300
 const afterLoad = asyncLoadDelay+50
@@ -11,11 +9,8 @@ const beforeLoad = asyncLoadDelay-50
 
 describe('mods to cypress logging', () => {
 
-  before(() => {
-    activateLogging()
-  })
-
   beforeEach(() => {
+    activateLogging()
     cy.mount(`<div id="present-on-load">Present on page load</div>`)
       .appendAfter(`<div id="added-after-delay" style="color:orange">Added after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
       .appendChild(`<span id="added-after-2x-delay" style="color:red">Added after 2x ${asyncLoadDelay} ms</span>`, asyncLoadDelay *2)

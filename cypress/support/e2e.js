@@ -1,5 +1,5 @@
 import './commands'
-import '@src'
+import '../../src/index.js'
 import addContext from 'mochawesome/addContext'
 
 const titleToFileName = (title) =>

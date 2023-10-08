@@ -5,7 +5,7 @@ let activators = [
 ]
 
 export const activatorHandler = {
-  softFailIsActive: (options) => {
+  nofailIsActive: (options) => {
     return activators.some(activator => activator(options))
   },
 }

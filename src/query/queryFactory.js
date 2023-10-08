@@ -18,11 +18,12 @@ export function queryFactory(testCtx, outerFn, ...args) {
   const queryParams = args.slice(0,args.length-1) 
   const userOptions = args.at(-1)
   const options = parseUserOptions(userOptions)
-  if (!options.softFail) {
+  if (!options.nofail) {
     return outerFn.apply(testCtx, [...queryParams, userOptions]) 
   }
 
   const cmd = cy.state('current')
+  cmd.nofail = true
 
   let log
   if (queryConfig.handleLoggingInQuery) {
@@ -46,7 +47,9 @@ export function queryFactory(testCtx, outerFn, ...args) {
     const $el = subject === null ? null : innerFn(subject)    // skip innerFn if previous result was null
     const found = !!$el?.length
     const timedOut = Date.now() > expires    
-    emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError)
+    if (queryConfig.handleLoggingInQuery) {
+      emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError)
+    }
     return (timedOut && !found) || subject === null ? null : $el
   }
 

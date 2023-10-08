@@ -31,7 +31,7 @@ declare namespace Cypress {
 
 interface QueryLogging {
   emitToCypressLog(
-    log: Cypress.Log, 
+    log: Cypress.QueryLog, 
     queryParams: String[], 
     options: Object, 
     subject: Cypress.Chainable<any>, 

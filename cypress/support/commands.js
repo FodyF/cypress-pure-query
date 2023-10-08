@@ -30,4 +30,7 @@ const after = (subject, html, delay = 0) => {
 }
 Cypress.Commands.add('appendAfter', {prevSubject:true}, after)
 
-Cypress.Commands.add('isNull', {prevSubject:true}, (x) => expect(x).to.eq(null))
+Cypress.Commands.add('isNull', {prevSubject:true}, (x) => {
+  const message = x === null ? 'Subject is null' : `expected ${x} to be null`
+  assert(x === null, message)
+})

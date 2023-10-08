@@ -2,7 +2,6 @@
 // @ts-check
 
 const {queryConfig, _, $} = Cypress
-queryConfig.handleLoggingInQuery = true
 
 class NullSubjectError extends Error {
   constructor(message) {
@@ -62,10 +61,16 @@ function cypressLog(progress) {
   }
 }
 export function activateLogging() {
-  cy.then(() => Cypress.on('query:log', cypressLog))
+  cy.then(() => {
+    queryConfig.handleLoggingInQuery = true
+    Cypress.on('query:log', cypressLog)
+  })
 }
 export function deactivateLogging() {
-  cy.then(() => Cypress.removeAllListeners('query:log'))
+  cy.then(() => {
+    queryConfig.handleLoggingInQuery = false
+    Cypress.removeAllListeners('query:log')
+  })
 }
 
 /**
@@ -87,7 +92,7 @@ export function emitToCypressLog(log, queryParams, options, subject, $el, found,
     $el, 
     found,
     passed: found, 
-    baseMessage: queryParams.filter(Boolean).join(', '),
+    baseMessage: queryParams?.filter(Boolean).join(', '),
     caughtError
   })
 }

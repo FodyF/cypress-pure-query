@@ -4,13 +4,13 @@ import {activatorHandler} from './nofailActivator.js'
 const {queryConfig} = Cypress;
 
 /**
- * @param {{ timeout?: Number; log?: Boolean;  softFail?: Boolean; }} [userOptions] 
+ * @param {{ timeout?: Number; log?: Boolean;  nofail?: Boolean; }} [userOptions] 
  */
 export function parseUserOptions(userOptions = {}) {
   const options = {...userOptions}
   options.log ??= true
   options.timeout ??= Cypress.config('defaultCommandTimeout')
-  options.softFail = activatorHandler.softFailIsActive(userOptions)
+  options.nofail = activatorHandler.nofailIsActive(userOptions)
   return options
 }
 
