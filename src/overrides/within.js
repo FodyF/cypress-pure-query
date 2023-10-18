@@ -1,3 +1,4 @@
+import {emitToCypressLog} from '../query/logging.js'
 
 const originalFn = cy.commandFns.within
 
@@ -12,20 +13,20 @@ function withinNofail(...args) {
   options = Cypress._.defaults({}, userOptions, { log: true })
 
   const prevCmdNofail = cy.state('current').get('prev').nofail
-  const skippingNullSubject = subject === null & prevCmdNofail
+  const skippingNullSubject = subject === null && prevCmdNofail
   
   const withinScope = skippingNullSubject ? cy.$$('body') : subject
   originalFn(withinScope, options, fn)
 
-  if (skippingNullSubject && Cypress.queryConfig.handleLoggingInQuery) {
+  if (skippingNullSubject && Cypress.queryConfig.handleLogging) {
     const log = cy.state('current').attributes.logs[0]
     log.set({
       displayName: '~within',
       type: 'skipped',
-      message: `${log.get('message')} (skipped)`,
       ended: true,
       state: 'warned',
     })
+    emitToCypressLog(log, [], options, subject, null, false, null)
   }
   return subject
 }

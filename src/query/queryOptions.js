@@ -21,6 +21,6 @@ export function getRunnerOptions(options) {
   return {
     ...options, 
     timeout: options.timeout + queryConfig.runnerTimeoutBump, 
-    log: queryConfig.handleLoggingInQuery ? false : options.log
+    log: queryConfig.handleLogging ? false : options.log
   }
 }

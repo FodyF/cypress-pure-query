@@ -23,10 +23,8 @@ export function queryFactory(testCtx, outerFn, ...args) {
   }
 
   const cmd = cy.state('current')
-  cmd.nofail = true
-
   let log
-  if (queryConfig.handleLoggingInQuery) {
+  if (queryConfig.handleLogging) {
     log = cy.state('current').attributes.logs[0] || 
       Cypress.log({
         displayName: `${cmd.get('name')}`,
@@ -38,19 +36,20 @@ export function queryFactory(testCtx, outerFn, ...args) {
   } 
 
   const innerFn = outerFn.apply(testCtx, [...queryParams, getRunnerOptions(options)])
-
   const caughtError = catchOnFailError(testCtx)
-
   const expires = Date.now() + options.timeout
 
   const queryFn = function(subject) {
+
     const $el = subject === null ? null : innerFn(subject)    // skip innerFn if previous result was null
     const found = !!$el?.length
-    const timedOut = Date.now() > expires    
-    if (queryConfig.handleLoggingInQuery) {
-      emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError)
-    }
-    return (timedOut && !found) || subject === null ? null : $el
+    const timedOut = Date.now() > expires
+
+    queryConfig.handleLogging && emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError)
+
+    const failedOnTimeout = timedOut && !found
+    const defaultValue = options.nofailDefault !== undefined ? options.nofailDefault : null
+    return (failedOnTimeout || subject === null) ? defaultValue : $el
   }
 
   return queryFn
