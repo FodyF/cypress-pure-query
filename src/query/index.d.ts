@@ -2,9 +2,19 @@
 
 declare namespace Cypress {
 
+    /**
+   * Interface for the configuration properties of queryFactory
+   *
+   * Members:
+   *  queryId - incremental id for query returned by queryFactory, useful in debugging
+   *  handleLogging - turn on to add artifacts to the Cypress log
+   *  handleErrors - turn on to record errors that would otherwise be logged
+   *  runnerTimeoutBump - amount of ms to increase query timeout by, to enable timeout to be handled locally
+   */
   interface QueryConfig {
     queryId: number
-    handleLoggingInQuery: boolean
+    handleLogging: boolean
+    handleErrors: boolean
     runnerTimeoutBump: number
   }
 
@@ -39,4 +49,11 @@ interface QueryLogging {
     found: Boolean, 
     caughtError: Error
   )
+}
+
+declare namespace Cypress {
+  interface Chainable {
+    activateLogging(): any
+    deactivateLogging(): any
+  }
 }

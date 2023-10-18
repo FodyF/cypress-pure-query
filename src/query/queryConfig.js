@@ -2,6 +2,7 @@
 
 Cypress.queryConfig = {
   queryId: 0,
-  handleLoggingInQuery: false,
+  handleLogging: false,  
+  handleErrors:  true,
   runnerTimeoutBump: 500,
 }

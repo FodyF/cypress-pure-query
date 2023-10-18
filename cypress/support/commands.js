@@ -34,3 +34,12 @@ Cypress.Commands.add('isNull', {prevSubject:true}, (x) => {
   const message = x === null ? 'Subject is null' : `expected ${x} to be null`
   assert(x === null, message)
 })
+
+Cypress.Commands.add('isBody', {prevSubject:true}, ($el) => {
+  assert($el[0] === cy.state('document').body, 'Subject is <body>')
+})
+
+Cypress.Commands.add('metaTests', (fn) => {
+  cy.then(() => Cypress.log({displayName: ' ', message: 'Meta:', end: true}))
+  fn()
+})

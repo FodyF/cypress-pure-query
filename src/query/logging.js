@@ -30,14 +30,13 @@ const yieldForConsole = ($el) => {
  * }} progress
  */
 function cypressLog(progress) {
-  if (!queryConfig.handleLoggingInQuery) return
+  if (!queryConfig.handleLogging) return
 
   try {
     const {queryParams, options, log, subject, $el, found, passed, baseMessage, caughtError} = progress
-    const tag = subject === null ? ' **(skipped)**' : passed ? '' : ' **(failed)**'
+    const statusTag = subject === null ? ' **(skipped)**' : passed ? '' : ' **(failed)**'
     const error = subject === null ? new NullSubjectError() 
       : found ? null : caughtError.error?.toString()
-
     log?.set({
       displayName: `~${log.get('displayName').replace(/~/g,'')}`,
       type: 'query',
@@ -54,24 +53,30 @@ function cypressLog(progress) {
       },
       state: passed ? 'passed' : 'warned',
       ended: true, 
-      message: `${baseMessage}${tag}`,
+      message: `${baseMessage}${statusTag}`,
     })
   } catch (error) {
     console.error('event:query:log', error.message)
   }
 }
+
 export function activateLogging() {
-  cy.then(() => {
-    queryConfig.handleLoggingInQuery = true
-    Cypress.on('query:log', cypressLog)
-  })
+  queryConfig.handleLogging = true
+  Cypress.on('query:log', cypressLog)
 }
+
+Cypress.Commands.add('activateLogging', () => {
+  queryConfig.handleLogging = true
+  Cypress.on('query:log', cypressLog)
+})
+
 export function deactivateLogging() {
-  cy.then(() => {
-    queryConfig.handleLoggingInQuery = false
-    Cypress.removeAllListeners('query:log')
-  })
+  queryConfig.handleLogging = false
+  Cypress.removeAllListeners('query:log')
 }
+Cypress.Commands.add('deactivateLogging', () => {
+  deactivateLogging()
+})
 
 /**
  * Used in queryFactory to emit data to the cypressLog handler

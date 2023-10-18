@@ -2,7 +2,7 @@
 
 ### Cypress queries that just return a result
 
-Cypress 12 gave query commands a new API, but they still fail the test when the query fails. This library allows queries to be side-effect free, as per the [CommandQuerySeparation](https://martinfowler.com/bliki/CommandQuerySeparation.html) principle:
+Cypress 12 gave query commands a new API, but they still fail the test when the query fails. This is an experimental library that allows queries to be side-effect free, as per the [CommandQuerySeparation](https://martinfowler.com/bliki/CommandQuerySeparation.html) principle:
 
 <dl>
   <dt>Queries:</dt>
@@ -11,7 +11,7 @@ Cypress 12 gave query commands a new API, but they still fail the test when the 
   <dd>Change the state of a system but do not return a value</dd>
 </dl>
 
-Use this library to build features such as 
+Use this library to build features such as  
 - **soft-assert**
 - **conditional testing**
 - **retry with actions**

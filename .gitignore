@@ -1,4 +1,10 @@
 node_modules
-README-1.md
 cypress/results
-ref/
+__nocommit/
+__no commit/README-1.md
+__no commit/ref/command.html
+__no commit/ref/its.js
+__no commit/ref/mount.js
+__no commit/ref/should.js
+__no commit/ref/within.js
+__no commit/ref/within.ts

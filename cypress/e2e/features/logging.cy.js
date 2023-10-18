@@ -10,7 +10,7 @@ const beforeLoad = asyncLoadDelay-50
 describe('mods to cypress logging', () => {
 
   beforeEach(() => {
-    activateLogging()
+    cy.activateLogging()
     cy.mount(`<div id="present-on-load">Present on page load</div>`)
       .appendAfter(`<div id="added-after-delay" style="color:orange">Added after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
       .appendChild(`<span id="added-after-2x-delay" style="color:red">Added after 2x ${asyncLoadDelay} ms</span>`, asyncLoadDelay *2)
@@ -22,7 +22,7 @@ describe('mods to cypress logging', () => {
 
       it('passing query, nofail: false', () => {
         cy.get('#added-after-delay').contains('Added')
-          .then(() => {
+          .metaTests(() => {
             expectLogText('contains', 'Added')
             expectLogColor('contains', 'white')
           })
@@ -30,7 +30,7 @@ describe('mods to cypress logging', () => {
 
       it('passing query, nofail: true', () => {
         cy.get('#added-after-delay').contains('Added', {nofail:true})
-          .then(() => {
+          .metaTests(() => {
             expectLogText('~contains', 'Added')
             expectLogColor('~contains', 'lightgray')
           })
@@ -38,7 +38,7 @@ describe('mods to cypress logging', () => {
 
       it('failing query, nofail: true', () => {
         cy.get('#added-after-delay').contains('not this text', {nofail:true, timeout:afterLoad})
-          .then(() => {
+          .metaTests(() => {
             expectLogText('~contains', 'not this text (failed)')
             expectLogColor('~contains', 'orange')
           })     
@@ -46,7 +46,7 @@ describe('mods to cypress logging', () => {
 
       it('failing timeout, nofail: true', () => {
         cy.get('#added-after-delay', {timeout:beforeLoad, nofail:true}).contains('Added', {nofail:true})
-          .then(() => {
+          .metaTests(() => {
             expectLogText('~get', '#added-after-delay (failed)')
             expectLogColor('~get', 'orange')
             expectLogText('~contains', 'Added (skipped)')
@@ -58,8 +58,8 @@ describe('mods to cypress logging', () => {
     context('FORMAT: cy.contains(content, options)', () => {
 
       it('passing query, nofail: false', () => {
-         cy.contains('#added-after-delay', 'Added')
-          .then(() => {
+        cy.contains('#added-after-delay', 'Added')
+          .metaTests(() => {
             expectLogText('contains', '#added-after-delay, Added')
             expectLogColor('contains', 'white')
           })
@@ -67,7 +67,7 @@ describe('mods to cypress logging', () => {
 
       it('passing query, nofail: true', () => {
         cy.contains('#added-after-delay', 'Added', {nofail:true})
-          .then(() => {
+          .metaTests(() => {
             expectLogText('~contains', '#added-after-delay, Added')
             expectLogColor('~contains', 'lightgray')
           })
@@ -75,7 +75,7 @@ describe('mods to cypress logging', () => {
 
       it('failing query, nofail: true', () => {
         cy.contains('#added-after-delay', 'not this text', {nofail:true, timeout:afterLoad})
-          .then(() => {
+          .metaTests(() => {
             expectLogText('~contains', '#added-after-delay, not this text (failed)')
             expectLogColor('~contains', 'orange')
           })
@@ -83,7 +83,7 @@ describe('mods to cypress logging', () => {
 
       it('failing timeout, nofail: true', () => {
         cy.contains('#added-after-delay', 'Added', {timeout:beforeLoad, nofail:true})
-          .then(() => {
+          .metaTests(() => {
             expectLogText('~contains', '#added-after-delay, Added (failed)')
             expectLogColor('~contains', 'orange')
           })
@@ -100,16 +100,16 @@ describe('deactivating logging', () => {
       .appendAfter(`<div id="added-after-delay" style="color:orange">Added after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
       .appendChild(`<span id="added-after-2x-delay" style="color:red">Added after 2x ${asyncLoadDelay} ms</span>`, asyncLoadDelay *2)
 
-    activateLogging()
+    cy.activateLogging()
     cy.get('#added-after-delay').contains('not this text', {nofail:true, timeout:afterLoad})
-      .then(() => {
+      .metaTests(() => {
         expectLogText('~contains', 'not this text (failed)')
         expectLogColor('~contains', 'orange')
       })     
 
-    deactivateLogging()
+    cy.deactivateLogging()
     cy.get('#added-after-delay').contains('not this text', {nofail:true, timeout:afterLoad})
-      .then(() => {
+      .metaTests(() => {
         expectLogText('contains', 'not this text')
         expectLogColor('contains', 'lightgray')
       })     

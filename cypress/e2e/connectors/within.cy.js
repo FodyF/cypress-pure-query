@@ -1,4 +1,4 @@
-import {activateLogging} from '@src/query/logging.js'
+import {expectLogText, expectLogColor} from '@cypress/support/log-helpers.js'
 
 console.clear()
 
@@ -9,9 +9,8 @@ Cypress.Commands.add('isBody', {prevSubject:true}, ($el) => {
 
 describe('testing .within()', {defaultCommandTimeout: 200}, () => {
 
-  console.log('logging', Cypress.queryConfig)
   beforeEach(() => {
-    activateLogging()
+    cy.activateLogging()
     cy.mount(`
       <div id="parent">
         <p>parent test</p>
@@ -20,9 +19,14 @@ describe('testing .within()', {defaultCommandTimeout: 200}, () => {
     `)
   })
 
-  it('nofail inside .within() callback works as expected', {defaultCommandTimeout:100}, () => {
+  it('nofail inside .within() callback works as expected', () => {
     cy.get('#parent').within(() => {
-      cy.get('#child').contains('not this text', {nofail:true}).isNull()
+      cy.get('#child').contains('not this text', {nofail:true})
+        .isNull()
+        .then(() => {
+          expectLogText('~contains', 'not this text (failed)')
+          expectLogColor('~contains', 'orange')
+        })
     })
   })
 
@@ -30,6 +34,12 @@ describe('testing .within()', {defaultCommandTimeout: 200}, () => {
     cy.get('#invalid', {nofail:true})
     .within(subject => {
       cy.wrap(subject).isBody()
+    })
+    .then(() => {
+      expectLogText('~get', '#invalid (failed)')
+      expectLogColor('~get', 'orange')
+      expectLogText('~within', '(skipped)')
+      expectLogColor('~within', 'orange')
     })
   })
 
@@ -39,7 +49,9 @@ describe('testing .within()', {defaultCommandTimeout: 200}, () => {
       cy.get('#child')
     })
     .isNull()
+    .then(() => {
+      expectLogText('~within', '(skipped)')
+      expectLogColor('~within', 'orange')
+    })
   })
-
-
 })
