@@ -1,6 +1,6 @@
 node_modules
 cypress/results
-__nocommit/
+__nocommit/*
 __no commit/README-1.md
 __no commit/ref/command.html
 __no commit/ref/its.js
