@@ -8,7 +8,6 @@ declare namespace Cypress {
     openWindow(url: string, features?: string): any
     isNull(subject: any): any
     isBody(subject: any): any
-    metaTests(fn: function): void
-    state: function
+    metaTests(fn: function): any
   }
 }

@@ -11,12 +11,20 @@ Cypress 12 gave query commands a new API, but they still fail the test when the 
   <dd>Change the state of a system but do not return a value</dd>
 </dl>
 
+<br/>  
+
+## Uses
+
 Use this library to build features such as  
 - **soft-assert**
 - **conditional testing**
-- **retry with actions**
+- **retry with actions**  
 
-## Logging
+<br/>  
+
+## Features
+
+### Logging
 
 Out of the box, the same Cypress log entries are produced - except that error messages are not output.
 

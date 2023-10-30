@@ -18,6 +18,12 @@ declare namespace Cypress {
     runnerTimeoutBump: number
   }
 
+  interface QueryError {
+    queryId: number
+    cmd: string
+    error: Error
+  }
+
   interface QueryLogConfig extends Cypress.LogConfig {
     type: 'parent' | 'child' | 'query'                   // extending
     visible: Boolean                                     // missing from LogConfig
@@ -32,10 +38,17 @@ declare namespace Cypress {
     set(options: Partial<QueryLogConfig>): Log
   }
 
+  interface QueryErrorHandler {
+    errorName: string
+    errorMatch: regex
+    default: any
+  }
+
   interface Cypress {
     queryConfig: QueryConfig
     queryLog: QueryLog
     queryLogConfig: QueryLogConfig
+    queryErrorList: QueryError[]
   }
 }
 
@@ -55,5 +68,7 @@ declare namespace Cypress {
   interface Chainable {
     activateLogging(): any
     deactivateLogging(): any
-  }
+    queryErrors(expected?: string[]): Chainable<any> | undefined
+    resetQueryErrors(): any
+ }
 }

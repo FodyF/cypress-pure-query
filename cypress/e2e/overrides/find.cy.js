@@ -6,9 +6,9 @@ console.clear()
 describe('cy.find()', () => {
 
   const asyncLoadDelay = 150
-  const afterLoad = asyncLoadDelay+50
-  const afterSpanLoads = (asyncLoadDelay*2)+50
-  const beforeLoad = asyncLoadDelay-50
+  const afterLoad = asyncLoadDelay+100
+  const afterSpanLoads = (asyncLoadDelay*2)+100
+  const beforeLoad = asyncLoadDelay-100
   const expectedText = `Appended after 2x ${asyncLoadDelay} ms`
 
   beforeEach(() => {

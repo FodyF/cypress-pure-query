@@ -1,3 +1,4 @@
+import {expectLogText, expectLogColor} from '@cypress/support/log-helpers.js'
 /// <reference types="cypress" />
 // @ts-check
 
@@ -10,11 +11,14 @@ describe('cy.get', () => {
   const beforeLoad = asyncLoadDelay-50
   const expectedText = `Appended after ${asyncLoadDelay} ms`
 
+  let errors
+
   beforeEach(() => {
+    errors = []
     cy.mount(`<div id="present-on-load">Present on page load</div>`)
       .appendAfter(`<div id="added-after-delay" style="color:red">Appended after ${asyncLoadDelay} ms</div>`, asyncLoadDelay)
   })
-
+  
   context('{nofail:true} option', () => {
 
     it('{nofail:true} causes a failing query to return null', () => {

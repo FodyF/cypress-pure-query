@@ -1,8 +1,10 @@
 
+const escaped = (s) => s.replace(/"/g, '\\"') 
+
 export function logEntryForCurrentTest() {
   const suiteTitles = [...Cypress.currentTest.titlePath].slice(0, -1)
-  const suiteTitleSelectors = suiteTitles.map(s => `div.collapsible:contains("${s}")`).join(' ')
-  const testTitleSelector = `li.test.runnable-active:has(span:contains("${Cypress.currentTest.title}"))`
+  const suiteTitleSelectors = suiteTitles.map(s => `div.collapsible:contains("${escaped(s)}")`).join(' ')
+  const testTitleSelector = `li.test.runnable-active:has(span:contains("${escaped(Cypress.currentTest.title)}"))`
   const selector = `${suiteTitleSelectors} ${testTitleSelector}`
   return cy.$$(selector, parent.document.body)
 }

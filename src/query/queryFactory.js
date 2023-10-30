@@ -1,4 +1,4 @@
-import {parseUserOptions, getRunnerOptions} from './queryOptions.js'
+import {activatorHandler} from './nofailActivator.js'
 import {emitToCypressLog} from './logging.js'
 const {queryConfig} = Cypress;
 
@@ -13,16 +13,17 @@ function catchOnFailError(testCtx) {
   return wrapper
 }
 
-export function queryFactory(testCtx, outerFn, ...args) {
-
+function parseParameters(args) {
   const queryParams = args.slice(0,args.length-1) 
   const userOptions = args.at(-1)
-  const options = parseUserOptions(userOptions)
-  if (!options.nofail) {
-    return outerFn.apply(testCtx, [...queryParams, userOptions]) 
-  }
+  const options = {...userOptions}
+  options.log ??= true
+  options.timeout ??= Cypress.config('defaultCommandTimeout')
+  options.nofail = activatorHandler.nofailIsActive(userOptions)
+  return [queryParams, options]
+}
 
-  const cmd = cy.state('current')
+function intiateLog(queryParams, options, cmd) {
   let log
   if (queryConfig.handleLogging) {
     log = cy.state('current').attributes.logs[0] || 
@@ -34,22 +35,73 @@ export function queryFactory(testCtx, outerFn, ...args) {
         consoleProps: () => ({}),
       })
   } 
+  return log
+}
 
-  const innerFn = outerFn.apply(testCtx, [...queryParams, getRunnerOptions(options)])
+function invokeInnerFn(innerFn, subject, errorHandler) {
+  let $el, found
+  if (subject === null) {        // skip innerFn if previous result was null
+    $el = null
+    found = false
+  } else {
+    try {
+      $el = innerFn(subject)   
+      found = !!(Cypress.dom.isJquery($el) ? $el?.length : $el)
+    } catch (error) {
+      if (errorHandler) {
+        $el = errorHandler(error)
+        found = false
+      } else {
+        throw error
+      }
+    }
+  }
+  return [$el, found]
+}
+
+export function queryFactory(testCtx, outerFn, ...args) {
+  const [queryParams, options] = parseParameters(args)
+
+  if (!options.nofail) {
+    return outerFn.apply(testCtx, [...queryParams, args.at(-1)])   // normal call
+  }
+
+  const cmd = cy.state('current')
+  cmd.nofail = true                                  // for .within()
+  const log = intiateLog(queryParams, options, cmd)
+
+  const runnerOptions = {
+    ...options, 
+    timeout: options.timeout + queryConfig.runnerTimeoutBump,    // control timeout from here
+    log: queryConfig.handleLogging ? false : options.log         // logging here only
+  }
+  const innerFn = outerFn.apply(testCtx, [...queryParams, runnerOptions])
+
   const caughtError = catchOnFailError(testCtx)
+
   const expires = Date.now() + options.timeout
 
   const queryFn = function(subject) {
-
-    const $el = subject === null ? null : innerFn(subject)    // skip innerFn if previous result was null
-    const found = !!$el?.length
     const timedOut = Date.now() > expires
+    if (timedOut) {
+      Cypress.emit('query:timedout')
+    }
 
-    queryConfig.handleLogging && emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError)
+    const [$el, found] = invokeInnerFn(innerFn, subject, options.nofailErrorHandler)
 
-    const failedOnTimeout = timedOut && !found
-    const defaultValue = options.nofailDefault !== undefined ? options.nofailDefault : null
-    return (failedOnTimeout || subject === null) ? defaultValue : $el
+
+       
+
+    if (queryConfig.handleLogging) {
+      emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError)
+    }
+
+    // const failedOnTimeout = timedOut && !found
+    // const defaultValue = options.nofailDefault !== undefined ? options.nofailDefault : null
+    // return (failedOnTimeout || subject === null) ? defaultValue : $el
+
+    
+    return (timedOut || subject === null) ? null : $el
   }
 
   return queryFn

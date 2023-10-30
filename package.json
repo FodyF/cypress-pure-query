@@ -18,7 +18,7 @@
     "webpack": "^5.88.2"
   },
   "dependencies": {
-    
+    "common-tags": "^1.8.2"
   },
   "scripts": {
     "run": "cypress run --spec cypress/features/logging.cy.js"

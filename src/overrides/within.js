@@ -3,6 +3,7 @@ import {emitToCypressLog} from '../query/logging.js'
 const originalFn = cy.commandFns.within
 
 function withinNofail(...args) {
+  console.log('withinNofail')
   let [subject, options = {}, fn] = args  // ensure options
 
   let userOptions = options
@@ -12,9 +13,10 @@ function withinNofail(...args) {
   }
   options = Cypress._.defaults({}, userOptions, { log: true })
 
+
+
   const prevCmdNofail = cy.state('current').get('prev').nofail
   const skippingNullSubject = subject === null && prevCmdNofail
-  
   const withinScope = skippingNullSubject ? cy.$$('body') : subject
   originalFn(withinScope, options, fn)
 

@@ -2,6 +2,8 @@ import './commands'
 import '../../src/index.js'
 import addContext from 'mochawesome/addContext'
 
+const {$,_} = Cypress
+
 const titleToFileName = (title) =>
   title.replace(/[:\/]/g, '')
 
@@ -26,8 +28,6 @@ Cypress.on('test:after:run', (test, runnable) => {
   // always add the video
   addContext({ test }, `../videos/${Cypress.spec.name}.mp4`)
 })
-
-const {$,_} = Cypress
 
 $.expr[':'].textEquals = Cypress.$.expr.createPseudo(function(arg) {
   return function( elem ) {

@@ -1,3 +1,5 @@
+import {clickTestLogOpen} from './log-helpers.js'
+
 /// <reference types="cypress" />
 // @ts-check
 
@@ -5,7 +7,7 @@ export const mount = (html) => {
   const testEl = Cypress.$(html).filter((i,e) => e.nodeType === 1)  // elements only, filter out mounted textnodes 
   cy.$$('body').empty()
   cy.$$('body').append(testEl)
-  // @ts-ignore
+  // @ts-ignore - noop not exposed by Cypress
   return cy.noop(testEl).as('testElements')
 }
 Cypress.Commands.add('mount', mount)
@@ -15,7 +17,7 @@ const append = (subject, html, delay = 0) => {
   setTimeout(() => {
     subject.append(testEl)
   }, delay)
-  // @ts-ignore
+  // @ts-ignore - noop not exposed by Cypress
   return cy.noop(testEl).as('testElements')
 }
 Cypress.Commands.add('appendChild', {prevSubject:true}, append)
@@ -25,7 +27,7 @@ const after = (subject, html, delay = 0) => {
   setTimeout(() => {
     subject.after(testEl)
   }, delay)
-  // @ts-ignore
+  // @ts-ignore - noop not exposed by Cypress
   return cy.noop(testEl).as('testElements')
 }
 Cypress.Commands.add('appendAfter', {prevSubject:true}, after)
@@ -39,7 +41,16 @@ Cypress.Commands.add('isBody', {prevSubject:true}, ($el) => {
   assert($el[0] === cy.state('document').body, 'Subject is <body>')
 })
 
-Cypress.Commands.add('metaTests', (fn) => {
-  cy.then(() => Cypress.log({displayName: ' ', message: 'Meta:', end: true}))
+export function metaTests(fn) {
+  Cypress.log({displayName: ' ', message: '\n', end: true})
+  Cypress.log({displayName: 'Meta asserts:', message: '', end: true})
   fn()
+}
+
+Cypress.Commands.add('metaTests', (fn) => {
+  clickTestLogOpen()
+  cy.then(() => {
+    metaTests(fn)
+  })
+  cy.then(() => Cypress.log({displayName: ' ', message: '\n', end: true}))
 })

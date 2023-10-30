@@ -11,9 +11,8 @@ class NullSubjectError extends Error {
 }
 
 const yieldForConsole = ($el) => {
-  return $el?.length > 1 ? $el.toArray() : 
-    $el?.length === 1 ? $el.get(0) :
-    '--nothing--'
+  return Cypress.dom.isJquery($el) ? ($el.length > 1 ? $el.toArray() : $el.get(0))
+    : $el || '--nothing--'
 }
 
 /**
