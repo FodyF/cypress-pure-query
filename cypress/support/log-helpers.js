@@ -23,11 +23,21 @@ export function clickTestLogOpen() {
   }
 }
 
-export function expectLogText(displayName, expectedText, index = 0) {  // increase index for 2nd, 3rd occurance
-  clickTestLogOpen()
+export function expectNotLogged(displayName, options = {}) {  
+  const {timeout = 1000} = options
+  cy.on('before:log', () => false)
+  cy.wait(timeout)
+  cy.wrap(logEntryForCurrentTest(), {log:false}).within(() => {
+    cy.get(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false}).should('not.exist')
+  })
+  cy.on('before:log', () => null)
+}
+
+export function expectLogText(displayName, expectedText, options = {}) {  
+  const {index = 0} = options      // increase index for 2nd, 3rd occurance
   cy.on('before:log', () => false)
   cy.wrap(logEntryForCurrentTest(), {log:false})
-    .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false})
+    .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false, timeout:1000})
     .eq(index, {log:false})
     .find('span.command-message-text', {log:false})
     .should($el => {
@@ -52,10 +62,9 @@ const colorCssToName = {
 }
 
 export function expectLogColor(displayName, expectedColor, index = 0) {
-  clickTestLogOpen()
   cy.on('before:log', () => false)
   cy.wrap(logEntryForCurrentTest(), {log:false})  
-    .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false})
+    .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false, timeout:1000})
     .eq(index, {log:false})
     .find('span.command-message-text', {log:false})
     .should($logEntry => {

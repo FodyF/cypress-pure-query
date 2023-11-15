@@ -1,21 +1,20 @@
 // @ts-check
 console.clear()
 
-describe('cy.focused', {defaultCommandTimeout:50}, () => {
+describe('cy.focused', {defaultCommandTimeout:100}, () => {
 
-  function isNull(x) {
-    expect(x).to.eq(null)
-  }
+  const asyncLoadDelay = 50
 
   beforeEach(() => {
-    cy.mount('<input id="input1">')
+    cy.mount('<div></div>')
+      .appendChild('<input id="input1">', asyncLoadDelay)
   })
 
   context('{nofail:true} option', () => {
 
     it('{nofail:true} causes a failing query to return null', () => {
       cy.focused({nofail:true})
-        .then(isNull)
+        .isNull()
     })
 
     it('{nofail:true} does not change a passing query', () => {
@@ -36,7 +35,7 @@ describe('cy.focused', {defaultCommandTimeout:50}, () => {
     it('Cypress.env("nofail", true) causes a failing query to return null', () => {
       Cypress.env("nofail", true)
       cy.focused()
-        .then(isNull)
+        .isNull()
     })
 
     it('Cypress.env("nofail", true) does not change a passing query', () => {

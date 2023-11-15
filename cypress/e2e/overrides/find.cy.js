@@ -34,7 +34,7 @@ describe('cy.find()', () => {
     it('{nofail:true} does not change a passing query', () => {
       cy.get('#added-after-delay', {timeout:afterLoad})              
         .find('span', {nofail:true, timeout:afterSpanLoads})   
-        .then($el => expect($el.text()).to.eq(expectedText))
+        .should($el => expect($el.text()).to.eq(expectedText))
     })
 
     it('{nofail:false} allows test to fail', (done) => {
@@ -78,7 +78,7 @@ describe('cy.find()', () => {
       Cypress.env("nofail", false)
       cy.get('#added-after-delay', {timeout:afterLoad})
         .find('span', {timeout:afterSpanLoads})
-        .then($el => expect($el.text()).to.eq(expectedText))
+        .should($el => expect($el.text()).to.eq(expectedText))
     })
 
     it('Cypress.env("nofail", false) allows test to fail', (done) => {

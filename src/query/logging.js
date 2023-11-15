@@ -36,8 +36,9 @@ function cypressLog(progress) {
     const statusTag = subject === null ? ' **(skipped)**' : passed ? '' : ' **(failed)**'
     const error = subject === null ? new NullSubjectError() 
       : found ? null : caughtError.error?.toString()
+    const name = log?.get('displayName') || log?.get('name')
     log?.set({
-      displayName: `~${log.get('displayName').replace(/~/g,'')}`,
+      displayName: `~${name.replace(/~/g,'')}`,
       type: 'query',
       $el,
       visible: true, 
@@ -63,10 +64,8 @@ export function activateLogging() {
   queryConfig.handleLogging = true
   Cypress.on('query:log', cypressLog)
 }
-
 Cypress.Commands.add('activateLogging', () => {
-  queryConfig.handleLogging = true
-  Cypress.on('query:log', cypressLog)
+  activateLogging()
 })
 
 export function deactivateLogging() {
@@ -83,7 +82,7 @@ Cypress.Commands.add('deactivateLogging', () => {
  * @param {String[]?} queryParams 
  * @param {Object?} options 
  * @param {Cypress.Chainable<any>?} subject 
- * @param {JQuery<any>?} $el 
+ * @param {any?} $el 
  * @param {Boolean} found 
  * @param {Error} caughtError 
  */

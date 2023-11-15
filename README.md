@@ -15,10 +15,24 @@ Cypress 12 gave query commands a new API, but they still fail the test when the 
 
 ## Uses
 
-Use this library to build features such as  
+Build plugins such as  
 - **soft-assert**
 - **conditional testing**
 - **retry with actions**  
+
+<br/>  
+
+## How to use
+
+Add the option `{nofail:true}` to the query to affect an individual query.  
+>  `cy.get(selector, {nofail:true})`
+
+or set the environment variable `Cypress.env('nofail', true)` to turn on for multiple queries.
+> ```js
+> Cypress.env('nofail', true)
+> cy.get(parent).find(child)
+
+Queries that fail will return `null` to the Cypress chain, allowing the following commands to check the result and take appropriate action.
 
 <br/>  
 
@@ -26,20 +40,20 @@ Use this library to build features such as
 
 ### Logging
 
-Out of the box, the same Cypress log entries are produced - except that error messages are not output.
+With logging turned off, the same Cypress log entries are produced, except that error messages are not logged.
 
-If you add the logging module by importing it in the spec or support
+Add the logging module by importing it in the spec or support (cypress/support/e2e.js)
 
 ```js
 import '@src/query/log.js'
 ````
 
-the Cypress log is enhanced with these artifacts:
+The Cypress log entries for `nofail` queries are enhanced:
 
-- queries with `{nofail:true}` applied are prefixed by `~` instead of the usual `-`
+- queries are prefixed by `~`
 - failing queries are colored orange
-- the status tag `(failed)` is added to the description
-- queries with a preceding fail are tagged with `(skipped)`
+- the tag `(failed)` is added when the query fails
+- the tag `(skipped)` is added when the preceding query fails
 
 Here is a comparison
 

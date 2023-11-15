@@ -10,7 +10,6 @@
     "@babel/preset-env": "^7.22.20",
     "@cypress/webpack-preprocessor": "^6.0.0",
     "babel-loader": "^9.1.3",
-    "cypress": "^13.1.0",
     "cypress-multi-reporters": "^1.6.3",
     "mochawesome": "^7.1.3",
     "mochawesome-merge": "^4.3.0",
@@ -18,9 +17,7 @@
     "webpack": "^5.88.2"
   },
   "dependencies": {
-    "common-tags": "^1.8.2"
-  },
-  "scripts": {
-    "run": "cypress run --spec cypress/features/logging.cy.js"
+    "common-tags": "^1.8.2",
+    "cypress": "13.3.2"
   }
 }

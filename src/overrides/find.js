@@ -1,6 +1,7 @@
 import {queryFactory} from '../query'
+// @ts-check
 
-Cypress.Commands.overwriteQuery('find', function (originalFn, ...args) {
+Cypress.Commands.overwriteQuery('find', (originalFn, ...args) => {
   let [selector, options = {}] = args  // ensure options
-  return queryFactory(this, originalFn, selector, options)
+  return queryFactory(originalFn, selector, options)
 })

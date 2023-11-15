@@ -29,13 +29,12 @@ describe('cy.contains', () => {
     })  
 
     it('{nofail:true} does not change a passing query', () => {
-
       cy.contains('#added-after-delay', expectedText, {nofail:true, timeout:afterLoad})
-        .then($el => expect($el.text()).to.eq(expectedText))
+        .should($el => expect($el.text()).to.eq(expectedText))
 
       cy.get('#added-after-delay')
-        .contains(expectedText, {nofail:true, timeout:afterLoad})
-        .then($el => expect($el.text()).to.eq(expectedText))
+        .contains('Added', {nofail:true, timeout:afterLoad})
+        .should($el => expect($el.text()).to.eq(expectedText))
     })
 
     it('{nofail:false} allows test to fail (syntax 1)', (done) => {
@@ -76,15 +75,15 @@ describe('cy.contains', () => {
     
     it('a fail in a prior query propagates the null subject forward', () => {
       Cypress.env("nofail", true)
-      cy.get('#not-present', {timeout:50})     // this yields null
-        .contains('this will be skipped')      // this does not evaluate, 
-        .isNull()                             // but passes on the null subject
+      cy.get('#not-present', {timeout:50}) 
+        .contains('this will be skipped') 
+        .isNull()                        
     })
 
     it('Cypress.env("nofail", true) does not change a passing query', () => {
       Cypress.env("nofail", true)
       cy.contains('#added-after-delay', expectedText, {timeout:afterLoad})
-        .then($el => expect($el.text()).to.eq(expectedText))
+        .should($el => expect($el.text()).to.eq(expectedText))
     })
 
     it('Cypress.env("nofail", false) allows test to fail (syntax 1)', (done) => {

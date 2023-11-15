@@ -58,7 +58,7 @@ interface QueryLogging {
     queryParams: String[], 
     options: Object, 
     subject: Cypress.Chainable<any>, 
-    $el: JQuery<any>, 
+    $el: any, 
     found: Boolean, 
     caughtError: Error
   )

@@ -1,4 +1,5 @@
 import './commands'
+import './mount'
 import '../../src/index.js'
 import addContext from 'mochawesome/addContext'
 

@@ -1,6 +1,7 @@
 import {queryFactory} from '../query'
+// @ts-check
 
-Cypress.Commands.overwriteQuery('get', function (originalFn, ...args) {
+Cypress.Commands.overwriteQuery('get', (originalFn, ...args) => {
   const [selector, options = {}] = args  // ensure options
 
   // Special handling non-existant alias
@@ -9,5 +10,5 @@ Cypress.Commands.overwriteQuery('get', function (originalFn, ...args) {
     if (!alias) return () => null
   }
 
-  return queryFactory(this, originalFn, selector, options)
+  return queryFactory(originalFn, selector, options)
 })

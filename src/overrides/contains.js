@@ -1,9 +1,10 @@
 import {queryFactory} from '../query'
+// @ts-check
 
-Cypress.Commands.overwriteQuery('contains', function (originalFn, ...args) {
+Cypress.Commands.overwriteQuery('contains', (originalFn, ...args) => {
   let [filter, text, options = {}] = args  // ensure options
 
-  // Parameter resolution copied from Cypress 12
+  // Parameter resolution copied from Cypress 13
   const _ = Cypress._
   if (_.isRegExp(text)) {
     // SYNTAX: .contains(filter, text)
@@ -19,5 +20,5 @@ Cypress.Commands.overwriteQuery('contains', function (originalFn, ...args) {
     filter = ''
   }
 
-  return queryFactory(this, originalFn, filter, text, options)
+  return queryFactory(originalFn, filter, text, options)
 })

@@ -1,4 +1,5 @@
 import { queryFactory } from '../query'
+// @ts-check
 
 const traversals = [
   'eq', 
@@ -21,7 +22,7 @@ const traversals = [
 ]
 
 traversals.forEach(traversal => {
-  Cypress.Commands.overwriteQuery(traversal, function (originalFn, arg1, arg2, userOptions) {
+  Cypress.Commands.overwriteQuery(traversal, (originalFn, arg1, arg2, userOptions) => {
 
     const {_} = Cypress
     if (_.isObject(arg1) && !_.isFunction(arg1)) {
@@ -33,7 +34,6 @@ traversals.forEach(traversal => {
       arg2 = null
     }
 
-    const queryFn = queryFactory(this, originalFn, arg1, arg2, userOptions)
-    return queryFn
+    return queryFactory(originalFn, arg1, arg2, userOptions)
   })
 })

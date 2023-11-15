@@ -22,7 +22,8 @@ describe('cy.alias', () => {
 
     it('{nofail:true} does not change a passing query', () => {
       cy.get('#added-after-delay', {nofail:true, timeout:afterLoad}).as('alias')
-      cy.get('@alias').then($el => expect($el.text()).to.eq(expectedText))
+      cy.get('@alias')
+        .then($el => expect($el.text()).to.eq(expectedText))
     })
   })
 
@@ -62,7 +63,6 @@ describe('cy.alias', () => {
         .then($el => $el.remove())
 
       cy.get('@alias', {timeout:afterLoad}).isNull()
-    }
-  ) 
+    }) 
   })
 })

@@ -3,9 +3,9 @@
 
 console.clear()
 
-describe('traversals', {defaultCommandTimeout:250}, () => {
+describe('traversals', {defaultCommandTimeout:150}, () => {
 
-  const asyncLoadDelay = 100
+  const asyncLoadDelay = 50
 
   it('first', () => {
     cy.get('#does-not-exist', {nofail:true})
@@ -61,7 +61,8 @@ describe('traversals', {defaultCommandTimeout:250}, () => {
       .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
 
     cy.get('#last')
-      .nextUntil('span', undefined, {nofail:true}) // 2nd param required for @ts-check 
+      // @ts-ignore - // 2nd param "filter" can be ommitted
+      .nextUntil('span', {nofail:true}) 
       .isNull()        
 
     cy.get('#first')
@@ -69,7 +70,8 @@ describe('traversals', {defaultCommandTimeout:250}, () => {
       .isNull() 
 
     cy.get('#last')
-      .nextUntil('#does-not-exist', undefined, {nofail:true})  // 2nd param required for @ts-check
+      // @ts-ignore - // 2nd param "filter" can be ommitted
+      .nextUntil('#does-not-exist', {nofail:true}) 
       .isNull() 
 
     cy.get('#first')
@@ -119,7 +121,8 @@ describe('traversals', {defaultCommandTimeout:250}, () => {
       .appendAfter(`<div id="last" style="color:red">last element</div>`, asyncLoadDelay *2)
 
     cy.get('#first')
-      .prevUntil('span', undefined, {nofail:true})  // fails as nothing prev to #first
+      // @ts-ignore - // 2nd param "filter" can be ommitted
+      .prevUntil('span', {nofail:true})  
       .isNull()          
 
     cy.get('#last')         
@@ -127,7 +130,8 @@ describe('traversals', {defaultCommandTimeout:250}, () => {
       .isNull()      
 
     cy.get('#first')
-      .prevUntil('#does-not-exist', undefined, {nofail:true})
+      // @ts-ignore - // 2nd param "filter" can be ommitted
+      .prevUntil('#does-not-exist', {nofail:true})
       .isNull()  
 
     cy.get('#last')
@@ -180,7 +184,8 @@ describe('traversals', {defaultCommandTimeout:250}, () => {
       .appendChild(`<div id="child" style="color:red">child element</div>`, asyncLoadDelay *2)
 
     cy.get('#child')
-      .parentsUntil('div', undefined, {nofail:true})
+      // @ts-ignore - // 2nd param "filter" can be ommitted
+      .parentsUntil('div', {nofail:true})
       .isNull()  
 
     cy.get('#child')
