@@ -1,5 +1,5 @@
 import {emitToCypressLog} from './logging.js'
-import {activatorHandler} from './nofailActivator.js'
+import {nofailIsActive} from './activatorHandler.js'
 // @ts-check
 
 const {queryConfig,_} = Cypress;
@@ -10,8 +10,8 @@ function parseArgs(args) {
   const options = {
     log: true,
     timeout: Cypress.config('defaultCommandTimeout'),
-    nofail: activatorHandler.nofailIsActive(userOptions),
-    ...userOptions
+    ...userOptions,
+    nofail: nofailIsActive(userOptions),
   }
   return [queryParams, options]
 }

@@ -16,7 +16,7 @@ module.exports = defineConfig({
             extensions: ['.ts', '.js', '.mjs'],     
             alias: {                     
               '@cypress': path.resolve(__dirname, './cypress'),
-              '@src': path.resolve(__dirname, './src')          
+              '@src': path.resolve(__dirname, './src'),
             },             
           },         
         },     
