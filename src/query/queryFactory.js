@@ -1,5 +1,5 @@
 import {emitToCypressLog} from './logging.js'
-import {nofailIsActive} from './activatorHandler.js'
+import {nofailIsActive} from './activator.js'
 // @ts-check
 
 const {queryConfig,_} = Cypress;
