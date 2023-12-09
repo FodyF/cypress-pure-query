@@ -1,4 +1,4 @@
-import {emitToCypressLog} from '../query/logging.js'
+import {emitToCypressLogSkip} from '../query/logging.js'
 // @ts-check
 
 const originalFn = cy.commandFns.within
@@ -27,7 +27,7 @@ function withinNofail(...args) {
       ended: true,
       state: 'warned',
     })
-    emitToCypressLog(log, [], options, subject, null, false, null)
+    emitToCypressLogSkip(log, [], options)
   }
   return subject
 }
