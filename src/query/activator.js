@@ -16,6 +16,7 @@ export const activators = {
  * Check all activator functions to see if the nofail option
  * should be applied to the current query
  * @param {object} options 
+ * @returns {Boolean}
  **/
 export function nofailIsActive(options) {
   const isActive = Object.values(activators).some(activator => activator(options))
@@ -57,6 +58,7 @@ Cypress.on('register:activator', activator => {
  * Helper function to check if the command after the query has a certain name
  * Use in a custom command to activate nofail for a single preceding query
  * @param {string} name 
+ * @returns {Boolean}
  **/
 export function whenNextCmdIs(name) {
   // @ts-ignore
@@ -68,6 +70,7 @@ export function whenNextCmdIs(name) {
  * Helper function to check if the command with a certain name is in the chain
  * Use in a custom command to activate nofail for a any preceding query in the chain
  * @param {string} name 
+ * @returns {Boolean}
  **/
 export function whenCmdInChain(name) {
   const chain = chainToArray()
