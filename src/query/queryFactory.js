@@ -1,4 +1,4 @@
-import {emitToCypressLog} from './logging.js'
+import {emitToCypressLog, emitToCypressLogSkip} from './logging.js'
 import {nofailIsActive} from './activator.js'
 // @ts-check
 
@@ -59,14 +59,10 @@ function invokeOuterFn(cmd, outerFn, queryParams, options) {
   return innerFn
 }
 
-function invokeInnerFn(innerFn, subject, timedOut, errorHandler) {
+function invokeInnerFn(innerFn, subject, expires, errorHandler) {
   let $el = null
   let found = false
-
-  /* skip innerFn if previous result was null */
-  if (subject === null) {        
-    return [$el, found]          
-  } 
+  const timedOut = Date.now() > expires
 
   try {
     const result = innerFn(subject)  
@@ -128,12 +124,13 @@ export function queryFactory(outerFn, ...args) {
   const expires = Date.now() + options.timeout
 
   const queryFn = function(subject) {
-    const timedOut = Date.now() > expires
-    const [$el, found] = invokeInnerFn(innerFn, subject, timedOut, cmd.queryState?.errorHandler)
-    if (queryConfig.handleLogging) {   
-      emitToCypressLog(log, queryParams, options, subject, $el, found, caughtError)
+    if (subject === null) {
+      emitToCypressLogSkip(log, queryParams, options)
+      return null  
     }
-    return subject === null ? null : $el
+    const [$el, found] = invokeInnerFn(innerFn, subject, expires, cmd.queryState?.errorHandler)
+    emitToCypressLog(log, queryParams, options, $el, found, caughtError)
+    return $el
   }
 
   return queryFn
