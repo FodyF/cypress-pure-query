@@ -61,7 +61,34 @@ Here is a comparison
 |:------------------------------------------------:|:----------------------------------------:|
 | ![Logging example](./images/logging-normal.png)  | ![Logging example](./images/logging.png) |
 
+### Custom activator
 
+As installed the `nofail` option can be activated directly in the query options, or by setting `Cypress.env('nofail', true)`.
+
+To make the activation transparent to the spec writer, custom commands can register an activator function that is checked every time a query is run.
+
+For example the branch custom command uses function `branchActivator()` to turn on `nofail`.
+
+This function returns true if the `.branch()` command is used further down the command chain. 
+
+```js
+const branchActivator = () => whenNextCmdIs('branch')
+registerActivator(branchActivator)
+
+Cypress.Commands.add('branch', {prevSubject:true}, (subject, actions) => {
+  if (subject) {
+    actions.found(subject)
+  } else {
+    actions.notfound(subject)
+  }
+})
+```
+
+There are two helper functions provided to make it easy to check the command chain:
+
+- `whenNextCmdIs` will activate only the query immediately preceding the custom command
+
+- `whenCmdInChain` will activate any command that precedes the custom command, starting from the beginning of the chain (based on `chainerId`)
 
 ------------------------------------------------------
 Author: Fody &lt;FodyF@gmail.com&gt; &copy; 2023
