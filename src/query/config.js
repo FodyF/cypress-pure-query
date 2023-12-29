@@ -5,4 +5,5 @@ Cypress.queryConfig = {
   handleLogging: false,  
   handleErrors:  true,
   runnerTimeoutBump: 500,
+  debug: 'flow'
 }

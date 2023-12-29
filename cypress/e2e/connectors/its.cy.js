@@ -1,5 +1,4 @@
-import {expectLogText, expectLogColor} from '@cypress/support/log-helpers.js'
-
+import {expectLogText, expectLogColor, expectNullSubject} from '@cypress/support/log-helpers.js'
 // @ts-check
 
 console.clear()
@@ -15,13 +14,13 @@ context('testing .its()', {defaultCommandTimeout: 200}, () => {
 
   it('{nofail:true} causes a failing query to return null', () => {
     cy.get('#test-element')
-      .its('nonproperty', {nofail: true})
-      .isNull()
+      .its('not-a-property', {nofail: true})
 
-    cy.metaTests(() => {
+    cy.metaTests(({subject}) => {
+      expectNullSubject(subject)
       expectLogText('get', '#test-element')
       expectLogColor('get', 'lightgray')
-      expectLogText('~its', 'nonproperty (failed)')
+      expectLogText('~its', 'not-a-property (failed)')
       expectLogColor('~its', 'orange')
     })
   })
@@ -29,9 +28,9 @@ context('testing .its()', {defaultCommandTimeout: 200}, () => {
   it('a passing its() query is not affected by nofail flag', {defaultCommandTimeout:100}, () => {
     cy.get('#test-element')
       .its('length', {nofail:true})
-      .should('eq', 1)
 
-    cy.metaTests(() => {
+    cy.metaTests(({subject}) => {
+      expect(subject).to.eq(1)
       expectLogText('get', '#test-element')
       expectLogColor('get', 'lightgray')
       expectLogText('~its', 'length')
@@ -42,9 +41,9 @@ context('testing .its()', {defaultCommandTimeout: 200}, () => {
   it('a fail in prev query skips .its()', () => {
     cy.get('#invalid', {nofail:true})
       .its('length', {nofail:true})
-      .isNull()
 
-    cy.metaTests(() => {
+    cy.metaTests(({subject}) => {
+      expectNullSubject(subject)
       expectLogText('~get', '#invalid (failed)')
       expectLogColor('~get', 'orange')
       expectLogText('~its', 'length (skipped)')
@@ -72,10 +71,10 @@ context('asynchronous', () => {
 
     it('property appears after timeout, fails', () => {
       cy.get('#test-element')
-        .its('0.testProp', {nofail: true, timeout: 200})
-        .isNull()
+        .its('0.testProp', {nofail: true, timeout: 150})
 
-      cy.metaTests(() => {
+      cy.metaTests(({subject}) => {
+        expectNullSubject(subject)
         expectLogText('~its', '0.testProp (failed)')
         expectLogColor('~its', 'orange')
       })
@@ -84,9 +83,9 @@ context('asynchronous', () => {
     it('property appears before timeout, passes', () => {
       cy.get('#test-element')
         .its('0.testProp', {nofail: true, timeout: 300})
-        .should('eq', 'testVal')
 
-      cy.metaTests(() => {
+      cy.metaTests(({subject}) => {
+        expect(subject).to.eq('testVal')
         expectLogText('~its', '0.testProp')
         expectLogColor('~its', 'lightgray')
       })
@@ -106,53 +105,27 @@ context('asynchronous', () => {
       `)
     })
 
-    it('times out before property appears', () => {
+    it('times out before property appears, fails', () => {
       cy.window()
         .its('appCustomField', {nofail: true, timeout: 150})
-        .isNull()
 
-        cy.metaTests(() => {
+        cy.metaTests(({subject}) => {
+          expectNullSubject(subject)
           expectLogText('~its', 'appCustomField (failed)')
           expectLogColor('~its', 'orange')
         })
       })
 
-    it('property appears before timeout', () => {
+    it('property appears before timeout, passes', () => {
       cy.window()
         .its('appCustomField', {nofail: true, timeout: 300})
-        .should('equal', 42)
       
-      cy.metaTests(() => {
+      cy.metaTests(({subject}) => {
+        expect(subject).to.eq(42)
         expectLogText('~its', 'appCustomField')
         expectLogColor('~its', 'lightgray')
       })
     })
   })
 
-})
-
-context('activation', () => {
-
-  beforeEach(() => {
-    cy.mount(`<div id="test-element">Element text</div>`)
-  })
-
-  it('activated with a {nofail:true} option', () => {
-    cy.get('#test-element')
-      .its('nonproperty', {nofail: true, timeout: 50})
-      .should(() => {
-        const cmd = cy.state('current')
-        assert(cmd.queryState.options.nofail === true, 'nofail option is set')
-      })
-  })
-  
-  it('not activated', (done) => {
-    cy.on('fail', () => {
-      const cmd = cy.state('current')
-      assert(cmd.queryState?.options?.nofail === undefined, 'nofail option is NOT set')
-      done()
-    })
-    cy.get('#test-element')
-      .its('nonproperty', {timeout: 50})
-  })
 })

@@ -18,6 +18,7 @@ Cypress.Commands.overwriteQuery('its', (originalFn, ...args) => {
   cmd.queryState = {
     ...cmd.queryState, 
     commandFn: originalFn.name,
+    optionsFirst: false,
     errorHandler
   }
 

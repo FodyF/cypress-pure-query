@@ -4,7 +4,7 @@ import {queryFactory} from '../query'
 Cypress.Commands.overwriteQuery('get', (originalFn, ...args) => {
   const [selector, options = {}] = args  // ensure options
 
-  // Special handling non-existant alias
+  // Special handling non-existent alias
   if (selector.startsWith('@')) {
     const alias = (cy.state('aliases') || {})[selector.slice(1)]
     if (!alias) return () => null

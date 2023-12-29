@@ -11,11 +11,13 @@ declare namespace Cypress {
    *  handleErrors - turn on to record errors that would otherwise be logged
    *  runnerTimeoutBump - amount of ms to increase query timeout by, to enable timeout to be handled locally
    */
+  type debugFormat = 'flat' | 'block' | 'flow'
   interface QueryConfig {
     queryId: number
     handleLogging: boolean
     handleErrors: boolean
     runnerTimeoutBump: number
+    debug: debugFormat | function
   }
 
   interface QueryError {
@@ -44,7 +46,17 @@ declare namespace Cypress {
     default: any
   }
 
+  interface QueryState {
+    assertionPassed: Boolean
+    baseMessage: string
+  }
+
+  interface Query extends Cypress.Command {
+    queryState: QueryState
+  }
+
   interface Cypress {
+    query: Query
     queryConfig: QueryConfig
     queryLog: QueryLog
     queryLogConfig: QueryLogConfig

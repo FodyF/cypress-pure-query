@@ -1,8 +1,8 @@
-import {emitToCypressLog, emitToCypressLogSkip} from './logging.js'
 import {nofailIsActive} from './activator.js'
+import {shouldLog} from './logging.js'
 // @ts-check
 
-const {queryConfig,_} = Cypress;
+const {queryConfig, _} = Cypress;
 
 function parseArgs(args) {
   const queryParams = args.slice(0,args.length-1)
@@ -13,21 +13,25 @@ function parseArgs(args) {
     ...userOptions,
     nofail: nofailIsActive(userOptions),
   }
-  return [queryParams, options]
+  return [queryParams, userOptions, options]
 }
 
-function intiateLog(queryParams, options, cmd) {
+function initiateLog(queryParams, options, cmd) {
+
   let log
-  if (queryConfig.handleLogging && !(options.log === false)) {
-    log = cmd.get('logs')[0] || 
-      Cypress.log({
-        displayName: cmd.get('name'),
-        message: queryParams.filter(Boolean),
-        state: 'pending',
-        timeout: options.timeout,
-        consoleProps: () => ({}),
-      })
+
+  if(!shouldLog(cmd, queryConfig)) {
+    return
   }
+
+  log = cmd.get('logs')[0] || 
+    Cypress.log({
+      displayName: cmd.get('name'),
+      message: queryParams.filter(Boolean),
+      state: 'pending',
+      timeout: options.timeout,
+      consoleProps: () => ({}),
+    })
   return log
 }
 
@@ -64,8 +68,13 @@ function invokeInnerFn(innerFn, subject, expires, errorHandler) {
   let found = false
   const timedOut = Date.now() > expires
 
+  if (timedOut) {
+    return [null, false, true]
+  }
+
   try {
     const result = innerFn(subject)  
+    // console.log('result', cy.state('current').get('name'), result)
     if (Cypress.dom.isJquery(result)) {
       /* DOM query - 
         pass back $el with length 0 to keep retrying
@@ -79,11 +88,7 @@ function invokeInnerFn(innerFn, subject, expires, errorHandler) {
         found = false
       }
     } else {
-      /* its() or invoke() -
-        if we reach here, there hasn't been an error 
-        can just return result 
-      */
-      $el = result
+      $el = timedOut ? null : result
       found = true    
     }
   } catch (error) {
@@ -94,15 +99,21 @@ function invokeInnerFn(innerFn, subject, expires, errorHandler) {
       throw error
     }
   }
-  return [$el, found]
+  return [$el, found, timedOut]
 }
 
 export function queryFactory(outerFn, ...args) {
-  const [queryParams, options] = parseArgs(args)
   const cmd = cy.state('current')
+  const chainerId = cmd.get('chainerId')
+  const queryId = ++queryConfig.queryId
+  const isSubQuery = cmd.queryState?.chainerId === chainerId
+
+  const [queryParams, userOptions, options] = parseArgs(args)
 
   if (!options.nofail) {
-    return outerFn.apply(cmd, args)   // normal call
+    const params = cmd.queryState?.optionsFirst ? [options, ...queryParams] : [...queryParams, options]
+    // console.log('params', params)
+    return outerFn.apply(cmd, params)   // normal call
   }
 
   /* 
@@ -111,25 +122,104 @@ export function queryFactory(outerFn, ...args) {
   */
   options.timeout = cmd.queryState?.options?.timeout || options.timeout
 
-  /* Save query state to cmd */
-  cmd.queryState = {
-    ...cmd.queryState,
-    queryId: ++queryConfig.queryId,
-    options
+  let log
+  const shouldLog = isSubQuery ? false : queryConfig.handleLogging && userOptions.log !== false
+  if (shouldLog) {
+    log = initiateLog(queryParams, options, cmd)
   }
 
-  let log = intiateLog(queryParams, options, cmd)
+  /* Save query state to cmd */
+  if (isSubQuery) {
+    cmd.queryState.subQuery = {
+      queryId,
+      queryParams,
+      userOptions: cmd.queryState.userOptions,  // preserve for nested queries e.g .contains()
+      options
+    }
+  } else {
+    cmd.queryState = {
+      ...cmd.queryState,
+      chainerId,
+      queryId,
+      isSubQuery,
+      queryParams,
+      userOptions,  
+      options, 
+      log,
+      baseMessage: log?.get('message') || queryParams?.filter(Boolean).join(', '),
+      shouldLog
+    }
+  }
+
   const innerFn = invokeOuterFn(cmd, outerFn, queryParams, options)
   const caughtError = catchOnFailError(cmd)
-  const expires = Date.now() + options.timeout
+  const start = Date.now()
+  const expires = start + options.timeout
+
+  let call = 0
+
+  function updateLog(cmd) {
+    const log = cmd.queryState.log || cmd.get('logs')[0]
+    const {$el, found} = cmd.queryState
+    const passed = cmd.queryState?.assertionPassed || found
+    Cypress.emit('query:log', {
+      cmd,
+      queryParams,
+      options, 
+      log, 
+      $el, 
+      found,
+      passed,
+      caughtError
+    })
+  }
+
+  function commandEndLog(cmd) {
+    if (!cmd.queryState?.options?.nofail) return
+
+    if (!cmd.queryState.shouldLog) {
+      cy.off('command:end', commandEndLog)
+      return
+    }
+
+    const {skipped} = cmd.queryState
+    if (skipped) {
+      Cypress.emit('query:skip', {
+        cmd,
+        queryParams,
+        options, 
+        log, 
+      })
+      // updateLog(cmd) 
+      const prev = cmd.get('prev')
+      if (prev) {
+        updateLog(prev) 
+      } 
+      cy.off('command:end', commandEndLog)
+      return
+    }
+
+    updateLog(cmd)
+
+    cy.off('command:end', commandEndLog)
+  }
+  cy.on('command:end', commandEndLog)
 
   const queryFn = function(subject) {
+    call = ++call
     if (subject === null) {
-      emitToCypressLogSkip(log, queryParams, options)
+      cmd.queryState.skipped = true
+      cmd.queryState.$el = null
+      cmd.queryState.found = false
+      cmd.queryState.timedOut = false
       return null  
     }
-    const [$el, found] = invokeInnerFn(innerFn, subject, expires, cmd.queryState?.errorHandler)
-    emitToCypressLog(log, queryParams, options, $el, found, caughtError)
+
+    const [$el, found, timedOut] = invokeInnerFn(innerFn, subject, expires, cmd.queryState?.errorHandler)
+    cmd.queryState.$el = $el
+    cmd.queryState.found = found
+    cmd.queryState.timedOut = timedOut
+
     return $el
   }
 

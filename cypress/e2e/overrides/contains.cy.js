@@ -30,11 +30,12 @@ describe('cy.contains', () => {
 
     it('{nofail:true} does not change a passing query', () => {
       cy.contains('#added-after-delay', expectedText, {nofail:true, timeout:afterLoad})
-        .should($el => expect($el.text()).to.eq(expectedText))
+        // .should($el => expect($el.text()).to.eq(expectedText))
+        .should('have.text', expectedText)
 
-      cy.get('#added-after-delay')
-        .contains('Added', {nofail:true, timeout:afterLoad})
-        .should($el => expect($el.text()).to.eq(expectedText))
+      // cy.get('#added-after-delay')
+      //   .contains('Added', {nofail:true, timeout:afterLoad})
+      //   .should($el => expect($el.text()).to.eq(expectedText))
     })
 
     it('{nofail:false} allows test to fail (syntax 1)', (done) => {

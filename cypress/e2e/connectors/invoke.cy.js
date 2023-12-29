@@ -1,4 +1,4 @@
-import {expectLogText, expectLogColor} from '@cypress/support/log-helpers.js'
+import {expectLogText, expectLogColor, expectNullSubject} from '@cypress/support/log-helpers.js'
 
 // @ts-check
 console.clear()
@@ -24,9 +24,9 @@ describe('testing .invoke()', {defaultCommandTimeout: 200}, () => {
   it('{nofail:true} causes a failing query to return null', () => {
     cy.get('#test-element')
       .invoke({nofail:true}, 'not-a-function')
-      .isNull()
 
-    cy.metaTests(() => {
+    cy.metaTests(({subject}) => {
+      expectNullSubject(subject)
       expectLogText('get', '#test-element')
       expectLogColor('get', 'lightgray')
       expectLogText('~invoke', 'not-a-function (failed)')
@@ -36,17 +36,10 @@ describe('testing .invoke()', {defaultCommandTimeout: 200}, () => {
 
   it('a passing invoke() query is not affected by nofail flag', () => {
     cy.get('#test-element')
-      .invoke({nofail:true, timeout:50}, 'css', 'color')
-      .should('eq', 'rgb(0, 128, 0)')
+      .invoke({nofail:true, timeout:100}, 'css', 'color')
 
-    cy.get('#test-element')
-      .invoke({nofail:true, timeout:50}, '0.makeRed')
-
-    cy.get('#test-element')
-      .invoke({nofail:true, timeout:50}, 'css', 'color')
-      .should('eq', 'rgb(255, 0, 0)')
-
-    cy.metaTests(() => {
+    cy.metaTests(({subject}) => {
+      assert(subject === 'rgb(0, 128, 0)', 'Subject is correct')
       expectLogText('get', '#test-element')
       expectLogColor('get', 'lightgray')
       expectLogText('~invoke', 'css, color')
@@ -54,12 +47,30 @@ describe('testing .invoke()', {defaultCommandTimeout: 200}, () => {
     })
   })
 
+  it('invoke() element method and assert changed color', () => {
+    cy.get('#test-element')
+      .invoke({nofail:true, timeout:50}, '0.makeRed')
+
+    cy.get('#test-element')
+      .invoke({nofail:true, timeout:50}, 'css', 'color')
+
+    cy.metaTests(({subject}) => {
+      assert(subject === 'rgb(255, 0, 0)', 'Subject is correct') 
+      expectLogText('get', '#test-element')
+      expectLogColor('get', 'lightgray')
+      expectLogText('~invoke', '0.makeRed', {index:0})
+      expectLogColor('~invoke', 'lightgray', {index:0})
+      expectLogText('~invoke', 'css, color', {index:1})
+      expectLogColor('~invoke', 'lightgray', {index:1})
+    })
+  })
+
   it('a fail in prev query skips .invoke()', () => {
     cy.get('#invalid', {nofail:true})
       .invoke({nofail:true, timeout:50}, 'css', 'color')
-      .isNull()
 
-    cy.metaTests(() => {
+    cy.metaTests(({subject}) => {
+      expectNullSubject(subject)
       expectLogText('~get', '#invalid (failed)')
       expectLogColor('~get', 'orange')
       expectLogText('~invoke', 'css, color (skipped)')
@@ -88,9 +99,9 @@ describe('asynchronous', () => {
     it('function appears after timeout, fails', () => {
       cy.get('#test-element')
         .invoke({nofail: true, timeout: 100}, '0.testFn')
-        .should('eq', null)
 
-      cy.metaTests(() => {
+      cy.metaTests(({subject}) => {
+        expectNullSubject(subject)
         expectLogText('~invoke', '0.testFn (failed)')
         expectLogColor('~invoke', 'orange')
       })
@@ -99,9 +110,9 @@ describe('asynchronous', () => {
     it('function appears before timeout, passes', () => {
       cy.get('#test-element')
         .invoke({nofail: true, timeout: 300}, '0.testFn')
-        .should('eq', 'testVal')
 
-      cy.metaTests(() => {
+      cy.metaTests(({subject}) => {
+        expect(subject).to.eq('testVal')
         expectLogText('~invoke', '0.testFn')
         expectLogColor('~invoke', 'lightgray')
       })
@@ -124,9 +135,9 @@ describe('asynchronous', () => {
     it('function appears after timeout, fails', () => {
       cy.window()
         .invoke({nofail: true, timeout: 150}, 'testFn')
-        .should('equal', null)
 
-        cy.metaTests(() => {
+        cy.metaTests(({subject}) => {
+          expectNullSubject(subject)
           expectLogText('~invoke', 'testFn (failed)')
           expectLogColor('~invoke', 'orange')
         })
@@ -135,9 +146,9 @@ describe('asynchronous', () => {
     it('function appears before timeout, passes', () => {
       cy.window()
         .invoke({nofail: true, timeout: 300}, 'testFn')
-        .should('equal', 'testVal')
       
-      cy.metaTests(() => {
+      cy.metaTests(({subject}) => {
+        expect(subject).to.eq('testVal')
         expectLogText('~invoke', 'testFn')
         expectLogColor('~invoke', 'lightgray')
       })
@@ -154,10 +165,10 @@ context('activation', () => {
   it('activated with a {nofail:true} option', () => {
     cy.get('#test-element')
       .invoke({nofail: true, timeout: 50}, 'not-a-function')
-      .should(() => {
-        const cmd = cy.state('current')
-        assert(cmd.queryState.options.nofail === true, 'nofail option is set')
-      })
+
+    cy.metaTests(({lastCmd}) => {
+      assert(lastCmd.queryState.userOptions.nofail === true, 'nofail option is set')
+    })
   })
   
   it('not activated', (done) => {
@@ -167,6 +178,6 @@ context('activation', () => {
       done()
     })
     cy.get('#test-element')
-      .invoke({timeout: 50}, 'not-a-function')  // timout has no affect here
+      .invoke({timeout: 50}, 'not-a-function')  // timeout has no affect here
   })
 })

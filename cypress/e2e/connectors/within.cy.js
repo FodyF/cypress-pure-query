@@ -23,7 +23,9 @@ describe('testing .within()', {defaultCommandTimeout: 200}, () => {
       cy.get('#child').contains('not this text', {nofail:true})
         .isNull()
     })
-    .metaTests(() => {
+    
+    cy.metaTests(({logs}) => {
+      expect(logs).to.have.length(5)
       expectLogText('~contains', 'not this text (failed)')
       expectLogColor('~contains', 'orange')
     })
@@ -34,7 +36,9 @@ describe('testing .within()', {defaultCommandTimeout: 200}, () => {
       .within(subject => {
         cy.wrap(subject).isBody()
       })
-      .metaTests(() => {
+
+      cy.metaTests(({logs}) => {
+        expect(logs).to.have.length(4)
         expectLogText('~get', '#invalid (failed)')
         expectLogColor('~get', 'orange')
         expectLogText('~within', '(skipped)')
@@ -48,7 +52,9 @@ describe('testing .within()', {defaultCommandTimeout: 200}, () => {
       cy.get('#child')
     })
     .isNull()
-    .metaTests(() => {
+
+    cy.metaTests(({logs}) => {
+      expect(logs).to.have.length(4)
       expectLogText('~within', '(skipped)')
       expectLogColor('~within', 'orange')
     })

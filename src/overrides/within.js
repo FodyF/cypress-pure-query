@@ -13,9 +13,13 @@ function withinNofail(...args) {
   }
   options = Cypress._.defaults({}, userOptions, { log: true })
 
-  const prevCmd = cy.state('current').get('prev')
-  const prevCmdNofail = prevCmd.queryState?.options?.nofail
+  const cmd = cy.state('current')
+  const prevCmd = cmd.get('prev')
+  // console.log('prevCmd', prevCmd)
+  const prevCmdNofail = prevCmd.queryState?.userOptions?.nofail
+  // console.log('prevCmdNofail', prevCmdNofail)
   const skippingNullSubject = subject === null && prevCmdNofail
+  // console.log('skippingNullSubject', skippingNullSubject)
   const withinScope = skippingNullSubject ? cy.$$('body') : subject
   originalFn(withinScope, options, fn)
 
@@ -27,7 +31,13 @@ function withinNofail(...args) {
       ended: true,
       state: 'warned',
     })
-    emitToCypressLogSkip(log, [], options)
+    // emitToCypressLogSkip(cmd, log, [], options)
+    Cypress.emit('query:skip', {
+      cmd,
+      queryParams: [],
+      options, 
+      log, 
+    })
   }
   return subject
 }

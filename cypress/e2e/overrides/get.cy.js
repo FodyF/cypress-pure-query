@@ -1,4 +1,3 @@
-import {expectLogText, expectLogColor} from '@cypress/support/log-helpers.js'
 /// <reference types="cypress" />
 // @ts-check
 
@@ -6,9 +5,9 @@ console.clear()
 
 describe('cy.get', () => {
 
-  const asyncLoadDelay = 200
+  const asyncLoadDelay = 300
   const afterLoad = asyncLoadDelay+50
-  const beforeLoad = asyncLoadDelay-50
+  const beforeLoad = asyncLoadDelay-100
   const expectedText = `Appended after ${asyncLoadDelay} ms`
 
   beforeEach(() => {
@@ -36,21 +35,22 @@ describe('cy.get', () => {
 
   context('Cypress.env("nofail", true) switch', () => {
 
-    it('Cypress.env("nofail", true) causes a failing query to return null', () => {
+    beforeEach(() => {
       Cypress.env("nofail", true)
+    })
+
+    it('Cypress.env("nofail", true) causes a failing query to return null', () => {
       cy.get('#added-after-delay', {timeout:beforeLoad}).isNull()
       cy.get('#does-not-exist', {timeout:50}).isNull()
     })
 
     it('Cypress.env("nofail", true) does not change a passing query', () => {
-      Cypress.env("nofail", true)
       cy.get('#added-after-delay', {timeout:afterLoad})
         .should($el => expect($el.text()).to.eq(expectedText))
     })
 
     it('Cypress.env("nofail", false) allows test to fail', (done) => {
       cy.on('fail', () => done())
-      Cypress.env("nofail", false)
       cy.get('#added-after-delay', {timeout:afterLoad})
         .then($el => expect($el.text()).to.eq('Not the text'))
     })

@@ -4,8 +4,8 @@ console.clear()
 describe('cy.alias', () => {
   
   const asyncLoadDelay = 150
-  const afterLoad = asyncLoadDelay+50
-  const beforeLoad = asyncLoadDelay-50
+  const afterLoad = asyncLoadDelay+100
+  const beforeLoad = asyncLoadDelay-100
   const expectedText = `Appended after ${asyncLoadDelay} ms`
 
   beforeEach(() => {
@@ -23,7 +23,10 @@ describe('cy.alias', () => {
     it('{nofail:true} does not change a passing query', () => {
       cy.get('#added-after-delay', {nofail:true, timeout:afterLoad}).as('alias')
       cy.get('@alias')
-        .then($el => expect($el.text()).to.eq(expectedText))
+        .then($el => {
+          console.log($el)
+          expect($el.text()).to.eq(expectedText)
+        })
     })
   })
 

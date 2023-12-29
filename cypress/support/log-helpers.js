@@ -8,6 +8,7 @@ export function logEntryForCurrentTest() {
   const selector = `${suiteTitleSelectors} ${testTitleSelector}`
   return cy.$$(selector, parent.document.body)
 }
+Cypress.Commands.add('logEntryForCurrentTest', logEntryForCurrentTest)
 
 export function clickTestTitle() {
   const $li = logEntryForCurrentTest()
@@ -23,33 +24,53 @@ export function clickTestLogOpen() {
   }
 }
 
+export function clickTestLogClosed() {
+  const $li = logEntryForCurrentTest()
+  const runnableInstruments = $li.find('div.runnable-instruments')
+  if (runnableInstruments.length > 0) {
+    clickTestTitle()
+  }
+}
+
 export function expectNotLogged(displayName, options = {}) {  
   const {timeout = 1000} = options
   cy.on('before:log', () => false)
   cy.wait(timeout)
-  cy.wrap(logEntryForCurrentTest(), {log:false}).within(() => {
-    cy.get(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false}).should('not.exist')
-  })
+  cy.logEntryForCurrentTest()
+    .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false}).should('not.exist')
   cy.on('before:log', () => null)
 }
 
-export function expectLogText(displayName, expectedText, options = {}) {  
-  const {index = 0} = options      // increase index for 2nd, 3rd occurance
-  cy.on('before:log', () => false)
-  cy.wrap(logEntryForCurrentTest(), {log:false})
+export function expectNullSubject(subject) {
+  cy.wrap(subject, {log:false}).should(() => { 
+    const msg = subject === null ? 'subject is null' : `expected subject to be null but it was ${subject}`
+    assert(subject === null, msg)
+  })
+}
+
+Cypress.Commands.add('commandMessageText', (displayName, options) => {
+  cy.logEntryForCurrentTest()
     .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false, timeout:1000})
-    .eq(index, {log:false})
+    .eq(options.index || 0, {log:false})
     .find('span.command-message-text', {log:false})
-    .should($el => {
-      const actualText = $el.text()
+})
+
+export function expectLogText(displayName, expectedText, options = {}) {  
+  cy.on('before:log', () => false)
+
+  cy.commandMessageText(displayName, options)
+    .should($logEntry => {
+      const actualText = $logEntry.text()
       const actual = actualText.replace('soft-assert', '').replace(/\*/g, '')  // remove displayName and markdown highlight chars
       const expected  = expectedText.replace('soft-assert - ', '').replace(/\*/g, '')  // remove console warn prefix
-      const indexTag = index ? `[${index}]` : ''
-      const message = actual === expected 
-        ? `log entry of "${displayName}${indexTag}" - text matches`
-        : `expected text to be "**${expected}**" but actual was "**${actual}**"`
+      const indexTag = options.index !== undefined ? `[${options.index}]` : ''
+      const logEntryName = `${displayName}${indexTag}`
+      const message = (actual === expected)
+        ? `log entry of "${logEntryName}" - text matches`
+        : `expected log entry of "${logEntryName}" to have text of "**${expected}**" but actual was "**${actual}**"`
       assert(actual === expected, message)
     })
+
   cy.on('before:log', () => null)
 } 
 
@@ -61,19 +82,23 @@ const colorCssToName = {
   'rgb(197, 201, 253)': 'white',
 }
 
-export function expectLogColor(displayName, expectedColor, index = 0) {
+export function expectLogColor(displayName, expectedColor, options = {}) {
   cy.on('before:log', () => false)
-  cy.wrap(logEntryForCurrentTest(), {log:false})  
-    .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false, timeout:1000})
-    .eq(index, {log:false})
-    .find('span.command-message-text', {log:false})
+
+  cy.commandMessageText(displayName, options)
     .should($logEntry => {
       const actual = colorCssToName[$logEntry.css('color')] || $logEntry.css('color')
-      const indexTag = index ? `[${index}]` : ''
-      const message = actual === expectedColor 
-        ? `log entry of "${displayName}${indexTag}" - color is **${expectedColor}**`
-        : `expected log entry of "${displayName}" to be **${expectedColor}** but actual color was **${actual}**`
+      const indexTag = options.index !== undefined ? `[${options.index}]` : ''
+      const logEntryName = `${displayName}${indexTag}`
+      const message = (actual === expectedColor)
+        ? `log entry of "${logEntryName}" - color is **${expectedColor}**`
+        : `expected log entry of "${logEntryName}" to be **${expectedColor}** but actual color was **${actual}**`
       assert(expectedColor === actual, message)
     })
+
   cy.on('before:log', () => null)
+}
+
+export function logsInChain() {
+  return logEntryForCurrentTest().find('span.command-info')
 }

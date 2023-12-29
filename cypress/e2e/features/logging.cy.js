@@ -26,11 +26,13 @@ context('nofail modifies the Cypress log', () => {
     })
 
     it('passing query, nofail: true', () => {
-      cy.get('#added-after-delay').contains('Added', {nofail:true})
-        .metaTests(() => {
-          expectLogText('~contains', 'Added')
-          expectLogColor('~contains', 'lightgray')
-        })
+      cy.get('#added-after-delay')
+        .contains('Added', {nofail:true})
+
+      cy.metaTests(() => {
+        expectLogText('~contains', 'Added')
+        expectLogColor('~contains', 'lightgray')
+      })
     })
 
     it('failing query, nofail: true', () => {
@@ -108,31 +110,25 @@ context('deactivating logging', () => {
   })
 })
 
-context('userOption {log:false} supresses log entry as normal', () => {
+context('userOption {log:false} suppresses log entry as normal', () => {
 
   it('passing query, nofail: false', () => {
-    cy.get('#added-after-delay').contains('Added', {nofail:false, log: false})
-      .metaTests(() => {
-        expectNotLogged('contains')
-      })
+    cy.get('#added-after-delay')
+      .contains('Added', {nofail:false, log: false})
+
+    cy.metaTests(() => {
+      expectNotLogged('contains')
+      expectNotLogged('~contains')
+    })
   })
 
   it('passing query, nofail: true', () => {
-    cy.get('#added-after-delay').contains('Added', {nofail:true, log: false})
-      .metaTests(() => {
-        expectNotLogged('~contains')
-      })
-  })
-})
+    cy.get('#added-after-delay')
+      .contains('Added', {nofail:true, log: false})
 
-context.skip('negative assertion', () => {
-
-  it('a negative assertion should give passing query', () => {
-    cy.get('#added-after-delay', {nofail:true, timeout:beforeLoad})
-      .should('not.exist')
     cy.metaTests(() => {
-      expectLogText('~get', '#added-after-delay (failed)')
-      expectLogColor('~get', 'lightgray')
+      expectNotLogged('~contains')
+      expectNotLogged('contains')
     })
   })
 })

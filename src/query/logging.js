@@ -15,8 +15,13 @@ const yieldForConsole = ($el) => {
     : $el || '--nothing--'
 }
 
+export function shouldLog(cmd, queryConfig) {
+  return queryConfig.handleLogging && cmd.queryState?.userOptions?.log !== false
+}
+
 /**
  * @param {{ 
+ *   cmd: Cypress.Query,
  *   queryParams: String[]?; 
  *   options: Object?; 
  *   log: Cypress.QueryLog; 
@@ -29,10 +34,12 @@ const yieldForConsole = ($el) => {
  * }} progress
  */
 function cypressLog(progress) {
-  if (!queryConfig.handleLogging) return
+  const {cmd, queryParams, options, log, $el, found, passed, caughtError} = progress
+  const baseMessage = cmd.queryState.baseMessage
+
+  if (!shouldLog(cmd, queryConfig)) return
 
   try {
-    const {queryParams, options, log, $el, found, passed, baseMessage, caughtError} = progress
     const statusTag = passed ? '' : ' **(failed)**'
     const error = found ? null : caughtError.error?.toString()
     const status = passed ? 'passed' : 'warned'
@@ -43,18 +50,20 @@ function cypressLog(progress) {
 }
 /**
  * @param {{ 
-*   queryParams: String[]?; 
-*   options: Object?; 
-*   log: Cypress.QueryLog; 
-* }} progress
+  *   cmd: Cypress.Query,
+  *   queryParams: String[]?; 
+  *   options: Object?; 
+  *   log: Cypress.QueryLog; 
+  * }} progress
 */
 function cypressLogSkip(progress) {
-  if (!queryConfig.handleLogging) return
+  const {cmd, queryParams, options, log} = progress
+  if (!shouldLog(cmd, queryConfig)) return
 
   try {
-    const {queryParams, options, log} = progress
-    const baseMessage = queryParams?.filter(Boolean).join(', ')
-    const status = 'warned'
+    const passed = cmd.queryState?.assertionPassed
+    const baseMessage = cmd.queryState?.baseMessage || queryParams?.filter(Boolean).join(', ')
+    const status = passed ? 'passed' : 'warned'
     const statusTag = ' **(skipped)**'
     const error = new NullSubjectError() 
     const $el = null
@@ -87,8 +96,12 @@ function doLog(log, queryParams, options, $el, error, baseMessage, status, statu
 }
 
 export function activateLogging() {
-  queryConfig.handleLogging = true
-  Cypress.on('query:log', cypressLog)
+  queryConfig.handleLogging = true  
+  Cypress.removeAllListeners('query:log')
+  Cypress.removeAllListeners('query:skip')
+  Cypress.on('query:log', (progress) => {
+    cypressLog(progress)
+  })
   Cypress.on('query:skip', cypressLogSkip)
 }
 Cypress.Commands.add('activateLogging', () => {
@@ -103,38 +116,3 @@ export function deactivateLogging() {
 Cypress.Commands.add('deactivateLogging', () => {
   deactivateLogging()
 })
-
-/**
- * Used in queryFactory to emit data to the cypressLog handler
- * @param {Cypress.Log} log 
- * @param {String[]?} queryParams 
- * @param {Object?} options 
- * @param {any?} $el 
- * @param {Boolean} found 
- * @param {Error} caughtError 
- */
-export function emitToCypressLog(log, queryParams, options, $el, found, caughtError) {
-  Cypress.emit('query:log', {
-    queryParams,
-    options, 
-    log, 
-    $el, 
-    found,
-    passed: found, 
-    baseMessage: queryParams?.filter(Boolean).join(', '),
-    caughtError
-  })
-}
-/**
- * Used in queryFactory to log query as skipped
- * @param {Cypress.Log} log 
- * @param {String[]?} queryParams 
- * @param {Object?} options 
- */
-export function emitToCypressLogSkip(log, queryParams, options) {
-  Cypress.emit('query:skip', {
-    queryParams,
-    options, 
-    log, 
-  })
-}

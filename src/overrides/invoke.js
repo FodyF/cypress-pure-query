@@ -5,8 +5,13 @@ const {_} = Cypress
 
 Cypress.Commands.overwriteQuery('invoke', (originalFn, ...args) => {
   let [options, path, functionArgs] = args
-  options ??= {}  // ensure options
 
+  if (!_.isObject(options)) {
+    functionArgs = path
+    path = options
+    options = {}
+  }
+ 
   const cmd = cy.state('current')
   cmd.queryState = { 
     ...cmd.queryState,
