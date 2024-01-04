@@ -25,22 +25,22 @@ Build plugins such as
 
 ## How to use
 
-This library provides overrides for Cypress queries **get**, **find**, and **contains**,  plus the various **traversals**. Also connectors **its()**, **invoke()**, **within()**.
+This library provides overrides for Cypress queries **get()**, **find()**, and **contains()**,  plus the various **traversal** queries. Also connectors **its()**, **invoke()**, and **within()**.
 
-These will behave normally, except when the option `{nofail:true}` is passed in, the query will not fail the test.  
+If the option `{nofail:true}` is passed, then the query will not fail the test.  
 
 > ```js
 > cy.get(selector, {nofail:true})  // does not fail if the selector is not found
 
-To turn on for multiple queries, set the environment variable `Cypress.env('nofail', true)`  
+For a sequence of queries, set `Cypress.env('nofail', true)`  
 
 > ```js
 > Cypress.env('nofail', true)
 > cy.get(parent).find(child)     // neither query will fail
 
-Queries that don't find the selector will yield `null` to the Cypress chain. 
+Queries that don't succeed will yield `null`. 
 
-The next command in the chain can check the result and take appropriate action.
+The next command in the chain can check the result and take appropriate action when `null` is passed in `subject`.
 
 -----------------------
 
@@ -65,7 +65,7 @@ Here is a comparison
 
 ### Custom activator
 
-Pure query behavior can be activated with the `{nofail:true}` option for a single query, or setting `Cypress.env('nofail', true)` for a chain of queries, or dynamically with a **custom activator** function.
+Pure query behavior can be activated with the `{nofail:true}` option for a single query, or `Cypress.env('nofail', true)` for a chain of queries, or dynamically with a **custom activator** function.
 
 For example this `branch()` custom command uses function `branchActivator()` to turn on `nofail` for any query that precedes the `branch()` command.
 
@@ -100,7 +100,7 @@ Queries can be over-written to return a different ***inner function*** - this is
 This library uses the `queryFactory` module to generate an inner function which
 
 - takes control of the timeout (bumps it by 500ms) so that Cypress does take action at the actual timeout
-- returns a zero-length jQuery object up to timeout so that Cypress retries the query inner function
+- returns a zero-length jQuery object up to timeout so that Cypress retries the inner function
 - upon timeout returns `null` if the target is not found, which stops Cypress failing the chain
 - if target is found pre-timeout, the non-zero jQuery object is returned and Cypress continues the chain
 - if configured for logging, takes over the logging by setting option `{log:false}` and issuing custom logs with `Cypress.log()` calls
