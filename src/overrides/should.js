@@ -6,16 +6,19 @@ Cypress.Commands.overwrite('should', async function (originalFn, ...args) {
 
   const cmd = cy.state('current')
   const nofail = cmd.queryState?.userOptions?.nofail
-  if (!nofail) return originalFn.apply(this, args)  // normal call
 
-  /*
-    Send assertion result back to queryState of preceding command
-  */
+  /* normal call */
+  if (!nofail) return originalFn.apply(this, args)  
+ 
+  // /* Leave skipped log color orange even if assertion passes */
+  // const skipped = cmd.queryState?.skipped
+  // if (skipped) return originalFn.apply(this, args)  // normal call
+
+  /* Send assertion result back to queryState of preceding command */
   const [subject, assertion, assertionValue] = args
-
   let result
   await Cypress.Promise.try(async function() {
-    await originalFn(subject, assertion, assertionValue)    
+    await originalFn(subject, assertion, assertionValue) 
     cmd.queryState.assertionPassed = true
     result = true
   })

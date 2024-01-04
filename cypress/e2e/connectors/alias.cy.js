@@ -24,7 +24,6 @@ describe('cy.alias', () => {
       cy.get('#added-after-delay', {nofail:true, timeout:afterLoad}).as('alias')
       cy.get('@alias')
         .then($el => {
-          console.log($el)
           expect($el.text()).to.eq(expectedText)
         })
     })

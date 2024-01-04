@@ -1,8 +1,10 @@
 # cypress-pure-query
 
-### Cypress queries that just return a result
+## Cypress queries that just return a result
 
-Cypress 12 gave query commands a new API, but they still fail the test when the query fails. This is an experimental library that allows queries to be side-effect free, as per the [CommandQuerySeparation](https://martinfowler.com/bliki/CommandQuerySeparation.html) principle:
+Cypress 12 gave query commands a new API, but they still fail the test when the query fails. This is an experimental library that allows queries to be side-effect free.
+
+As per the [CommandQuerySeparation](https://martinfowler.com/bliki/CommandQuerySeparation.html) principle:
 
 <dl>
   <dt>Queries:</dt>
@@ -11,7 +13,6 @@ Cypress 12 gave query commands a new API, but they still fail the test when the 
   <dd>Change the state of a system but do not return a value</dd>
 </dl>
 
-<br/>  
 
 ## Uses
 
@@ -20,40 +21,41 @@ Build plugins such as
 - **conditional testing**
 - **retry with actions**  
 
-<br/>  
+-----------------------
 
 ## How to use
 
-Add the option `{nofail:true}` to the query to affect an individual query.  
->  `cy.get(selector, {nofail:true})`
+This library provides overrides for Cypress queries **get**, **find**, and **contains**,  plus the various **traversals**. Also connectors **its()**, **invoke()**, **within()**.
 
-or set the environment variable `Cypress.env('nofail', true)` to turn on for multiple queries.
+These will behave normally, except when the option `{nofail:true}` is passed in, the query will not fail the test.  
+
+> ```js
+> cy.get(selector, {nofail:true})  // does not fail if the selector is not found
+
+To turn on for multiple queries, set the environment variable `Cypress.env('nofail', true)`  
+
 > ```js
 > Cypress.env('nofail', true)
-> cy.get(parent).find(child)
+> cy.get(parent).find(child)     // neither query will fail
 
-Queries that fail will return `null` to the Cypress chain, allowing the following commands to check the result and take appropriate action.
+Queries that don't find the selector will yield `null` to the Cypress chain. 
 
-<br/>  
+The next command in the chain can check the result and take appropriate action.
+
+-----------------------
 
 ## Features
 
 ### Logging
 
-With logging turned off, the same Cypress log entries are produced, except that error messages are not logged.
-
-Add the logging module by importing it in the spec or support (cypress/support/e2e.js)
-
-```js
-import '@src/query/log.js'
-````
-
-The Cypress log entries for `nofail` queries are enhanced:
+Logging is an optional feature that modifies the Cypress GUI log entries for `nofail` queries in the following way:
 
 - queries are prefixed by `~`
 - failing queries are colored orange
 - the tag `(failed)` is added when the query fails
 - the tag `(skipped)` is added when the preceding query fails
+
+With logging off, the standard Cypress log entries are output, except that error messages are not logged.
 
 Here is a comparison
 
@@ -63,13 +65,9 @@ Here is a comparison
 
 ### Custom activator
 
-As installed the `nofail` option can be activated directly in the query options, or by setting `Cypress.env('nofail', true)`.
+Pure query behavior can be activated with the `{nofail:true}` option for a single query, or setting `Cypress.env('nofail', true)` for a chain of queries, or dynamically with a **custom activator** function.
 
-To make the activation transparent to the spec writer, custom commands can register an activator function that is checked every time a query is run.
-
-For example the branch custom command uses function `branchActivator()` to turn on `nofail`.
-
-This function returns true if the `.branch()` command is used further down the command chain. 
+For example this `branch()` custom command uses function `branchActivator()` to turn on `nofail` for any query that precedes the `branch()` command.
 
 ```js
 const branchActivator = () => whenNextCmdIs('branch')
@@ -86,9 +84,33 @@ Cypress.Commands.add('branch', {prevSubject:true}, (subject, actions) => {
 
 There are two helper functions provided to make it easy to check the command chain:
 
-- `whenNextCmdIs` will activate only the query immediately preceding the custom command
+- `whenNextCmdIs` activates only the query immediately preceding
 
-- `whenCmdInChain` will activate any command that precedes the custom command, starting from the beginning of the chain (based on `chainerId`)
+- `whenCmdInChain` activates any preceding query, back to the beginning of the chain (i.e same `chainerId`)
+
+-----------------------
+
+## How it works
+
+
+Queries can be over-written to return a different ***inner function*** - this is the function that Cypress calls repeatedly during the timeout period. See [Documentation on Custom Queries](https://docs.cypress.io/api/cypress-api/custom-queries)
+
+#### Query Factory 
+
+This library uses the `queryFactory` module to generate an inner function which
+
+- takes control of the timeout (bumps it by 500ms) so that Cypress does take action at the actual timeout
+- returns a zero-length jQuery object up to timeout so that Cypress retries the query inner function
+- upon timeout returns `null` if the target is not found, which stops Cypress failing the chain
+- if target is found pre-timeout, the non-zero jQuery object is returned and Cypress continues the chain
+- if configured for logging, takes over the logging by setting option `{log:false}` and issuing custom logs with `Cypress.log()` calls
+
+#### Negative assertions 
+
+An overwrite to `.should()` does a pre-check of the assertion and writes the result back to the preceding query in the `assertionPassed` property.
+
+This property is used to by the query to set state to passed.
+
 
 ------------------------------------------------------
 Author: Fody &lt;FodyF@gmail.com&gt; &copy; 2023

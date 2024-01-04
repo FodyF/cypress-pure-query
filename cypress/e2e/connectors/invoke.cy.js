@@ -16,7 +16,10 @@ describe('testing .invoke()', {defaultCommandTimeout: 200}, () => {
         div.makeRed = () => {
           div.style = "color: red"
           return div
-        } 
+        }
+        div.failOnCall = () => {
+          throw new Error('thrown on function invoke')
+        }
       </script>
     `)
   })
@@ -77,9 +80,20 @@ describe('testing .invoke()', {defaultCommandTimeout: 200}, () => {
       expectLogColor('~invoke', 'orange')
     })
   })
+
+  it('property exists but calling throws an error', () => {
+    cy.get('#test-element')
+      .invoke({nofail:true, timeout:100}, 'failOnCall')
+
+    cy.metaTests(({subject}) => {
+      expectNullSubject(subject)
+      expectLogText('~invoke', 'failOnCall (failed)')
+      expectLogColor('~invoke', 'orange')
+    })
+  })
 })
 
-describe('asynchronous', () => {
+describe('asynchronous property', () => {
 
   context('function added to an element', () => {
 
@@ -166,8 +180,8 @@ context('activation', () => {
     cy.get('#test-element')
       .invoke({nofail: true, timeout: 50}, 'not-a-function')
 
-    cy.metaTests(({lastCmd}) => {
-      assert(lastCmd.queryState.userOptions.nofail === true, 'nofail option is set')
+    cy.metaTests(({lastQuery}) => {
+      assert(lastQuery.queryState.userOptions.nofail === true, 'nofail option is set')
     })
   })
   

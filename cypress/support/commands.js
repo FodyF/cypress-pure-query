@@ -13,34 +13,23 @@ Cypress.Commands.add('isBody', {prevSubject:true}, ($el) => {
   assert($el[0] === cy.state('document').body, 'Subject is <body>')
 })
 
-export function metaTests(fn, subject, lastCmd) {
+export function metaTests(fn, ...args) {
   Cypress.log({displayName: ' ', message: '\n', end: true})
   Cypress.log({displayName: 'Meta asserts:', message: '', end: true})
-  fn(subject, lastCmd)
+  fn(...args)
 }
 
 Cypress.Commands.add('metaTests', (fn) => {
   clickTestLogOpen()
+  const metaTestsWrapper = cy.state('current')
   cy.then(() => {
-    const lastCmd = cy.state('current').get('prev').get('prev')
-    const subject = lastCmd.queryState?.$el
-    const chain = cy.queue.queueables.filter(c => c.get('chainerId') === lastCmd.get('chainerId'))
+    const chainerId = metaTestsWrapper.get('prev').get('chainerId')
+    const chain = cy.queue.queueables.filter(cmd => cmd.get('chainerId') === chainerId)
+    const lastQuery = chain.filter(cmd => cmd.get('type') !== 'assertion' ).slice(-1)[0]
+    const subject = lastQuery.queryState?.$el
     const logs = logsInChain()
-    metaTests(fn, {subject, lastCmd, chain, logs})
+    metaTests(fn, {subject, lastQuery, chain, logs})
   })
   cy.then(() => Cypress.log({displayName: ' ', message: '\n', end: true}))
   cy.then(() => clickTestLogClosed())
 })
-
-// Cypress.Commands.add('metaTests', {prevSubject: 'optional'}, (subject, fn) => {
-
-//   if (!_.isFunction(fn)) {
-//     fn = subject
-//     subject = undefined
-//   }
-//   clickTestLogOpen()
-//   cy.then(() => {
-//     metaTests(fn, subject)
-//   })
-//   cy.then(() => Cypress.log({displayName: ' ', message: '\n', end: true}))
-// })

@@ -17,13 +17,10 @@ function parseArgs(args) {
 }
 
 function initiateLog(queryParams, options, cmd) {
-
   let log
-
   if(!shouldLog(cmd, queryConfig)) {
     return
   }
-
   log = cmd.get('logs')[0] || 
     Cypress.log({
       displayName: cmd.get('name'),
@@ -64,17 +61,12 @@ function invokeOuterFn(cmd, outerFn, queryParams, options) {
 }
 
 function invokeInnerFn(innerFn, subject, expires, errorHandler) {
-  let $el = null
-  let found = false
+  let $el
+  let found
   const timedOut = Date.now() > expires
-
-  if (timedOut) {
-    return [null, false, true]
-  }
 
   try {
     const result = innerFn(subject)  
-    // console.log('result', cy.state('current').get('name'), result)
     if (Cypress.dom.isJquery(result)) {
       /* DOM query - 
         pass back $el with length 0 to keep retrying
@@ -88,7 +80,7 @@ function invokeInnerFn(innerFn, subject, expires, errorHandler) {
         found = false
       }
     } else {
-      $el = timedOut ? null : result
+      $el = result
       found = true    
     }
   } catch (error) {
@@ -112,7 +104,6 @@ export function queryFactory(outerFn, ...args) {
 
   if (!options.nofail) {
     const params = cmd.queryState?.optionsFirst ? [options, ...queryParams] : [...queryParams, options]
-    // console.log('params', params)
     return outerFn.apply(cmd, params)   // normal call
   }
 
@@ -190,7 +181,6 @@ export function queryFactory(outerFn, ...args) {
         options, 
         log, 
       })
-      // updateLog(cmd) 
       const prev = cmd.get('prev')
       if (prev) {
         updateLog(prev) 
@@ -204,6 +194,8 @@ export function queryFactory(outerFn, ...args) {
     cy.off('command:end', commandEndLog)
   }
   cy.on('command:end', commandEndLog)
+
+
 
   const queryFn = function(subject) {
     call = ++call
@@ -219,6 +211,7 @@ export function queryFactory(outerFn, ...args) {
     cmd.queryState.$el = $el
     cmd.queryState.found = found
     cmd.queryState.timedOut = timedOut
+    cmd.queryState.error = caughtError.error
 
     return $el
   }

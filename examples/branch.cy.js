@@ -46,7 +46,7 @@ context('Custom command to branch if element found or not found', () => {
       cy.get('@notfound').should('be.called')
     })
       
-    it('delayed elemrent', () => {
+    it('delayed element', () => {
       cy.get('#added-after-delay')
         .branch({
           found: cy.spy().as('found'),

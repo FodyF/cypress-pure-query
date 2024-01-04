@@ -1,4 +1,4 @@
-import {expectLogText, expectLogColor, expectNotLogged} from '@cypress/support/log-helpers.js'
+import {expectLogText, expectLogColor, expectNotLogged, expectNullSubject} from '@cypress/support/log-helpers.js'
 /// <reference types="cypress" />
 // @ts-check
 
@@ -46,7 +46,8 @@ describe('cy.find()', () => {
       .find('span', {nofail:true})   
       .should('not.exist')          
       
-    cy.metaTests(({logs}) => {
+    cy.metaTests(({logs, subject}) => {
+      expectNullSubject(subject)
       expect(logs.length).to.eq(3)
       expectLogText('~get', '#does-not-exist (failed)')
       expectLogColor('~get', 'orange')
