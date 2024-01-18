@@ -1,5 +1,4 @@
 import {expectLogText, expectLogColor} from '@cypress/support/log-helpers.js'
-import '@src/overrides/should.js'
 
 console.clear()
 

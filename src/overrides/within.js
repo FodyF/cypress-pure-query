@@ -1,4 +1,3 @@
-import {emitToCypressLogSkip} from '../query/logging.js'
 // @ts-check
 
 const originalFn = cy.commandFns.within
@@ -15,11 +14,8 @@ function withinNofail(...args) {
 
   const cmd = cy.state('current')
   const prevCmd = cmd.get('prev')
-  // console.log('prevCmd', prevCmd)
   const prevCmdNofail = prevCmd.queryState?.userOptions?.nofail
-  // console.log('prevCmdNofail', prevCmdNofail)
   const skippingNullSubject = subject === null && prevCmdNofail
-  // console.log('skippingNullSubject', skippingNullSubject)
   const withinScope = skippingNullSubject ? cy.$$('body') : subject
   originalFn(withinScope, options, fn)
 
@@ -31,7 +27,6 @@ function withinNofail(...args) {
       ended: true,
       state: 'warned',
     })
-    // emitToCypressLogSkip(cmd, log, [], options)
     Cypress.emit('query:skip', {
       cmd,
       queryParams: [],

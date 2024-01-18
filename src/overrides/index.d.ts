@@ -11,6 +11,14 @@ interface NoFail {
 
 declare namespace Cypress {
   interface Chainable {
+    state: any
+    commandFns: any
+    addCommand: any
+  }
+}
+
+declare namespace Cypress {
+  interface Chainable {
        
     children<E extends Node = HTMLElement>(options?: Partial<Loggable & Timeoutable & NoFail>): Chainable<JQuery<E>>
     children<K extends keyof HTMLElementTagNameMap>(selector: K, 

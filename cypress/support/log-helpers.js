@@ -34,11 +34,9 @@ export function clickTestLogClosed() {
 
 export function expectNotLogged(displayName, options = {}) {  
   const {timeout = 1000} = options
-  cy.on('before:log', () => false)
   cy.wait(timeout)
   cy.logEntryForCurrentTest()
     .find(`span.command-info:has(span.command-method:textEquals("${displayName}"))`, {log:false}).should('not.exist')
-  cy.on('before:log', () => null)
 }
 
 export function expectNullSubject(subject) {
@@ -56,8 +54,6 @@ Cypress.Commands.add('commandMessageText', (displayName, options) => {
 })
 
 export function expectLogText(displayName, expectedText, options = {}) {  
-  cy.on('before:log', () => false)
-
   cy.commandMessageText(displayName, options)
     .should($logEntry => {
       const actualText = $logEntry.text()
@@ -70,8 +66,6 @@ export function expectLogText(displayName, expectedText, options = {}) {
         : `expected log entry of "${logEntryName}" to have text of "**${expected}**" but actual was "**${actual}**"`
       assert(actual === expected, message)
     })
-
-  cy.on('before:log', () => null)
 } 
 
 const colorCssToName = {
@@ -83,8 +77,6 @@ const colorCssToName = {
 }
 
 export function expectLogColor(displayName, expectedColor, options = {}) {
-  cy.on('before:log', () => false)
-
   cy.commandMessageText(displayName, options)
     .should($logEntry => {
       const actual = colorCssToName[$logEntry.css('color')] || $logEntry.css('color')
@@ -95,8 +87,6 @@ export function expectLogColor(displayName, expectedColor, options = {}) {
         : `expected log entry of "${logEntryName}" to be **${expectedColor}** but actual color was **${actual}**`
       assert(expectedColor === actual, message)
     })
-
-  cy.on('before:log', () => null)
 }
 
 export function logsInChain() {

@@ -67,6 +67,7 @@ context('get', () => {
         assert(error.message.includes(msg), 'Correct error thrown')
         done()
       })
+
       cy.get('#present-on-load', {nofail:true, timeout:100})
         .should('not.exist')
     })

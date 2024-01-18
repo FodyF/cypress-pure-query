@@ -166,13 +166,6 @@ export function queryFactory(outerFn, ...args) {
   }
 
   function commandEndLog(cmd) {
-    if (!cmd.queryState?.options?.nofail) return
-
-    if (!cmd.queryState.shouldLog) {
-      cy.off('command:end', commandEndLog)
-      return
-    }
-
     const {skipped} = cmd.queryState
     if (skipped) {
       Cypress.emit('query:skip', {
@@ -185,17 +178,20 @@ export function queryFactory(outerFn, ...args) {
       if (prev) {
         updateLog(prev) 
       } 
-      cy.off('command:end', commandEndLog)
+      cy.off('command:end', commandEnd)
       return
     }
-
     updateLog(cmd)
-
-    cy.off('command:end', commandEndLog)
   }
-  cy.on('command:end', commandEndLog)
 
-
+  function commandEnd(cmd) {
+    if (!cmd.queryState?.options?.nofail) return
+    if (cmd.queryState.shouldLog) {
+      commandEndLog(cmd)
+    }
+    cy.off('command:end', commandEnd)
+  }
+  cy.on('command:end', commandEnd)
 
   const queryFn = function(subject) {
     call = ++call
@@ -210,9 +206,10 @@ export function queryFactory(outerFn, ...args) {
     const [$el, found, timedOut] = invokeInnerFn(innerFn, subject, expires, cmd.queryState?.errorHandler)
     cmd.queryState.$el = $el
     cmd.queryState.found = found
+    cmd.queryState.elapsed = Date.now() - start
     cmd.queryState.timedOut = timedOut
     cmd.queryState.error = caughtError.error
-
+    
     return $el
   }
 
