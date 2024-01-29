@@ -20,19 +20,19 @@ function withinNofail(...args) {
   originalFn(withinScope, options, fn)
 
   if (skippingNullSubject && Cypress.queryConfig.handleLogging) {
-    const log = cy.state('current').attributes.logs[0]
+    const log = cmd.get('logs')[0]
     log.set({
       displayName: '~within',
       type: 'skipped',
       ended: true,
       state: 'warned',
     })
-    Cypress.emit('query:skip', {
-      cmd,
-      queryParams: [],
-      options, 
+    cmd.queryState = {
+      options,
       log, 
-    })
+      shouldLog: Cypress.queryConfig.handleLogging && options.log !== false
+    }
+    Cypress.emit('query:skip', cmd)
   }
   return subject
 }

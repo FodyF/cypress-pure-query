@@ -25,7 +25,7 @@ module.exports = defineConfig({
       on('file:preprocessor', file => webpackPreprocessor(options)(file))
       return config
     },
-    specPattern: '**/*.cy.js',
+    specPattern: ['cypress/**/*.cy.js', 'examples/**/*.cy.js'],
   },
   
   reporter: 'mochawesome',

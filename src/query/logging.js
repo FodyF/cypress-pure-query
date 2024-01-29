@@ -15,56 +15,37 @@ const yieldForConsole = ($el) => {
     : $el || '--nothing--'
 }
 
-export function shouldLog(cmd, queryConfig) {
-  return queryConfig.handleLogging && cmd.queryState?.userOptions?.log !== false
-}
-
 /**
- * @param {{ 
- *   cmd: Cypress.Query,
- *   queryParams: String[]?; 
- *   options: Object?; 
- *   log: Cypress.QueryLog; 
- *   subject: Cypress.Chainable<any>?; 
- *   $el: JQuery<any>?; 
- *   found: Boolean; 
- *   passed: Boolean; 
- *   baseMessage: string; 
- *   caughtError: { error?: Error}; 
- * }} progress
+ * @param {{ queryState: { shouldLog?: any; assertionPassed?: any; baseMessage?: any; error?: any; log?: any; $el?: any; found?: any; queryParams?: any; options?: any; }; }} cmd
  */
-function cypressLog(progress) {
-  const {cmd, queryParams, options, log, $el, found, passed, caughtError} = progress
-  const baseMessage = cmd.queryState.baseMessage
-
-  if (!shouldLog(cmd, queryConfig)) return
+function cypressLog(cmd) {
+  if (!cmd.queryState?.shouldLog) return
 
   try {
-    const statusTag = passed ? '' : ' **(failed)**'
-    const error = found ? null : caughtError.error?.toString()
+    const {log, $el, found, queryParams = [], options = {}} = cmd.queryState
+    const passed = cmd.queryState?.assertionPassed || found
+    const baseMessage = cmd.queryState.baseMessage
     const status = passed ? 'passed' : 'warned'
+    const statusTag = passed ? '' : '**(failed)**'
+    const error = found ? null : cmd.queryState.error?.toString()
     doLog(log, queryParams, options, $el, error, baseMessage, status, statusTag)
   } catch (error) {
     console.error('event:query:log', error.message)
   }
 }
+
 /**
- * @param {{ 
-  *   cmd: Cypress.Query,
-  *   queryParams: String[]?; 
-  *   options: Object?; 
-  *   log: Cypress.QueryLog; 
-  * }} progress
-*/
-function cypressLogSkip(progress) {
-  const {cmd, queryParams, options, log} = progress
-  if (!shouldLog(cmd, queryConfig)) return
+ * @param {{ queryState: { shouldLog?: any; assertionPassed?: any; baseMessage?: any; log?: any; queryParams?: any; options?: any; }; }} cmd
+ */
+function cypressLogSkip(cmd) {
+  if (!cmd.queryState?.shouldLog) return
 
   try {
+    const {log, queryParams = [], options = {}} = cmd.queryState
     const passed = cmd.queryState?.assertionPassed
-    const baseMessage = cmd.queryState?.baseMessage || queryParams?.filter(Boolean).join(', ')
+    const baseMessage = cmd.queryState?.baseMessage || queryParams?.filter(Boolean).join(', ').trim()
     const status = passed ? 'passed' : 'warned'
-    const statusTag = ' **(skipped)**'
+    const statusTag = '**(skipped)**'
     const error = new NullSubjectError() 
     const $el = null
     doLog(log, queryParams, options, $el, error, baseMessage, status, statusTag)
@@ -91,7 +72,7 @@ function doLog(log, queryParams, options, $el, error, baseMessage, status, statu
     },
     state: status,
     ended: true, 
-    message: `${baseMessage}${statusTag}`,
+    message: `${baseMessage} ${statusTag}`.trim(),
   })
 }
 
@@ -99,8 +80,8 @@ export function activateLogging() {
   queryConfig.handleLogging = true  
   Cypress.removeAllListeners('query:log')
   Cypress.removeAllListeners('query:skip')
-  Cypress.on('query:log', (progress) => {
-    cypressLog(progress)
+  Cypress.on('query:log', (cmd) => {
+    cypressLog(cmd)
   })
   Cypress.on('query:skip', cypressLogSkip)
 }

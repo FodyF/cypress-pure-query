@@ -1,5 +1,4 @@
 import {nofailIsActive} from './activator.js'
-import {shouldLog} from './logging.js'
 // @ts-check
 
 const {queryConfig, _} = Cypress;
@@ -16,12 +15,12 @@ function parseArgs(args) {
   return [queryParams, userOptions, options]
 }
 
-function initiateLog(queryParams, options, cmd) {
-  let log
-  if(!shouldLog(cmd, queryConfig)) {
-    return
-  }
-  log = cmd.get('logs')[0] || 
+function initiateLog(cmd) {
+  const {queryParams, options, isSubQuery, userOptions} = cmd.queryState
+  const shouldLog = isSubQuery ? false : queryConfig.handleLogging && userOptions?.log !== false
+  if (!shouldLog) return 
+
+  const log = cmd.get('logs')[0] || 
     Cypress.log({
       displayName: cmd.get('name'),
       message: queryParams.filter(Boolean),
@@ -29,18 +28,21 @@ function initiateLog(queryParams, options, cmd) {
       timeout: options.timeout,
       consoleProps: () => ({}),
     })
-  return log
+  cmd.queryState = {
+    ...cmd.queryState,
+    log,
+    baseMessage: log && (log.get('message') || queryParams?.filter(Boolean).join(', ')),
+    shouldLog
+  }
 }
 
 function catchOnFailError(cmd) {
-  const wrapper = {}
   const originalOnFail = cmd.get('onFail')
   const onFailHandler = (err) => {
     originalOnFail && originalOnFail(err)
-    wrapper.error = err
+    cmd.queryState.error = err
   }
   cmd.set('onFail', onFailHandler)
-  return wrapper
 }
 
 function invokeOuterFn(cmd, outerFn, queryParams, options) {
@@ -94,12 +96,53 @@ function invokeInnerFn(innerFn, subject, expires, errorHandler) {
   return [$el, found, timedOut]
 }
 
-export function queryFactory(outerFn, ...args) {
-  const cmd = cy.state('current')
+function initializeState(cmd, options, userOptions, queryParams) {
   const chainerId = cmd.get('chainerId')
   const queryId = ++queryConfig.queryId
   const isSubQuery = cmd.queryState?.chainerId === chainerId
 
+  if (isSubQuery) {
+    /* 
+      If this is a sub-query, e.g its() called internally by invoke()
+      it should inherit the options.timeout of parent command
+    */
+    options.timeout = cmd.queryState?.options?.timeout || options.timeout
+    // save parent query state for reverting in commandEnd
+    cmd.queryState.parentState = _.cloneDeep(cmd.queryState)
+  }
+  cmd.queryState = {
+    ...cmd.queryState,   // the query may be setting some state, e.g invoke() sets "optionsFirst"
+    chainerId, 
+    queryId, 
+    isSubQuery,
+    queryParams, 
+    userOptions, 
+    options
+  }
+}
+
+function commandEnd(cmd) {
+  if (!cmd.queryState?.options?.nofail) return
+  if (cmd.queryState.shouldLog) {
+    commandEndLog(cmd)
+  }
+  cy.off('command:end', commandEnd)
+}
+
+function commandEndLog(cmd) {
+  if (cmd.queryState.skipped) {
+    Cypress.emit('query:skip', cmd)
+    const prev = cmd.get('prev')
+    if (prev) {
+      Cypress.emit('query:log', prev)
+    } 
+  } else {
+    Cypress.emit('query:log', cmd)
+  }
+}
+
+export function queryFactory(outerFn, ...args) {
+  const cmd = cy.state('current')
   const [queryParams, userOptions, options] = parseArgs(args)
 
   if (!options.nofail) {
@@ -107,112 +150,42 @@ export function queryFactory(outerFn, ...args) {
     return outerFn.apply(cmd, params)   // normal call
   }
 
-  /* 
-    If this is a sub-query, e.g its() called internally by invoke()
-    it should inherit the options.timeout of parent cmd
-  */
-  options.timeout = cmd.queryState?.options?.timeout || options.timeout
-
-  let log
-  const shouldLog = isSubQuery ? false : queryConfig.handleLogging && userOptions.log !== false
-  if (shouldLog) {
-    log = initiateLog(queryParams, options, cmd)
-  }
-
-  /* Save query state to cmd */
-  if (isSubQuery) {
-    cmd.queryState.subQuery = {
-      queryId,
-      queryParams,
-      userOptions: cmd.queryState.userOptions,  // preserve for nested queries e.g .contains()
-      options
-    }
-  } else {
-    cmd.queryState = {
-      ...cmd.queryState,
-      chainerId,
-      queryId,
-      isSubQuery,
-      queryParams,
-      userOptions,  
-      options, 
-      log,
-      baseMessage: log?.get('message') || queryParams?.filter(Boolean).join(', '),
-      shouldLog
-    }
-  }
-
+  initializeState(cmd, options, userOptions, queryParams)
+  initiateLog(cmd)
   const innerFn = invokeOuterFn(cmd, outerFn, queryParams, options)
-  const caughtError = catchOnFailError(cmd)
+  catchOnFailError(cmd)
+
   const start = Date.now()
   const expires = start + options.timeout
-
   let call = 0
-
-  function updateLog(cmd) {
-    const log = cmd.queryState.log || cmd.get('logs')[0]
-    const {$el, found} = cmd.queryState
-    const passed = cmd.queryState?.assertionPassed || found
-    Cypress.emit('query:log', {
-      cmd,
-      queryParams,
-      options, 
-      log, 
-      $el, 
-      found,
-      passed,
-      caughtError
-    })
-  }
-
-  function commandEndLog(cmd) {
-    const {skipped} = cmd.queryState
-    if (skipped) {
-      Cypress.emit('query:skip', {
-        cmd,
-        queryParams,
-        options, 
-        log, 
-      })
-      const prev = cmd.get('prev')
-      if (prev) {
-        updateLog(prev) 
-      } 
-      cy.off('command:end', commandEnd)
-      return
-    }
-    updateLog(cmd)
-  }
-
-  function commandEnd(cmd) {
-    if (!cmd.queryState?.options?.nofail) return
-    if (cmd.queryState.shouldLog) {
-      commandEndLog(cmd)
-    }
-    cy.off('command:end', commandEnd)
-  }
   cy.on('command:end', commandEnd)
 
   const queryFn = function(subject) {
     call = ++call
     if (subject === null) {
-      cmd.queryState.skipped = true
-      cmd.queryState.$el = null
-      cmd.queryState.found = false
-      cmd.queryState.timedOut = false
+      cmd.queryState = {
+        ...cmd.queryState,
+        skipped: true,
+        $el: null,
+        found: false,
+        timedOut: false,
+        call
+      }
       return null  
     }
 
     const [$el, found, timedOut] = invokeInnerFn(innerFn, subject, expires, cmd.queryState?.errorHandler)
-    cmd.queryState.$el = $el
-    cmd.queryState.found = found
-    cmd.queryState.elapsed = Date.now() - start
-    cmd.queryState.timedOut = timedOut
-    cmd.queryState.error = caughtError.error
-    
+    cmd.queryState = {
+      ...cmd.queryState,
+      $el,
+      found,
+      elapsed: Date.now() - start,
+      timedOut,
+      call
+    }
+
     return $el
   }
 
   return queryFn
 }
-

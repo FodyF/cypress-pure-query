@@ -45,8 +45,19 @@ declare namespace Cypress {
   }
 
   interface QueryState {
+    queryParams: array[any]
+    options: object
+    log: object 
+    $el: any
+    found: Boolean
+    elapsed: number
+    timedOut: Boolean
+    passed: Boolean
+    skipped: Boolean
     assertionPassed: Boolean
     baseMessage: string
+    shouldLog: Boolean
+    error: Error
   }
 
   interface Query extends Cypress.Command {
